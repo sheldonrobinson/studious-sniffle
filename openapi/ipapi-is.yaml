@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: ipapi.is IP Intelligence API
+  description: >
+    REST API for IP geolocation, ASN, hosting provider detection, VPN detection, and abuse data.
+    Based on ipapi.is documentation.
+  version: 1.0.0
+  contact:
+    name: ipapi.is
+    url: https://ipapi.is
+servers:
+  - url: https://ipapi.is
+    description: Production server
+
+paths:
+  /api/{ip}:
+    get:
+      summary: Lookup IP address information
+      description: >
+        Returns geolocation, ASN, hosting, VPN, and abuse information for a given IPv4 or IPv6 address.
+      parameters:
+        - name: ip
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 8.8.8.8
+          description: IPv4 or IPv6 address to look up.
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Your API key for authentication.
+        - name: fields
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated list of fields to return (optional).
+      responses:
+        '200':
+          description: Successful IP lookup
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ip:
+                    type: string
+                    example: 8.8.8.8
+                  ipVersion:
+                    type: integer
+                    example: 4
+                  continent:
+                    type: string
+                    example: North America
+                  country:
+                    type: string
+                    example: United States
+                  countryCode:
+                    type: string
+                    example: US
+                  region:
+                    type: string
+                    example: California
+                  city:
+                    type: string
+                    example: Mountain View
+                  latitude:
+                    type: number
+                    format: float
+                    example: 37.386
+                  longitude:
+                    type: number
+                    format: float
+                    example: -122.0838
+                  asn:
+                    type: string
+                    example: AS15169
+                  org:
+                    type: string
+                    example: Google LLC
+                  hosting:
+                    type: boolean
+                    example: false
+                  vpn:
+                    type: boolean
+                    example: false
+                  abuse:
+                    type: boolean
+                    example: false
+        '400':
+          description: Invalid IP address or missing parameters
+        '401':
+          description: Unauthorized - invalid API key
+        '429':
+          description: Too many requests - rate limit exceeded
+        '500':
+          description: Internal server error
+
+  /api/bulk:
+    post:
+      summary: Bulk IP lookup
+      description: >
+        Look up multiple IP addresses in a single request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ips:
+                  type: array
+                  items:
+                    type: string
+                  example: ["8.8.8.8", "1.1.1.1"]
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Your API key for authentication.
+      responses:
+        '200':
+          description: Bulk lookup results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IPLookupResult'
+
+components:
+  schemas:
+    IPLookupResult:
+      type: object
+      properties:
+        ip:
+          type: string
+        ipVersion:
+          type: integer
+        continent:
+          type: string
+        country:
+          type: string
+        countryCode:
+          type: string
+        region:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        asn:
+          type: string
+        org:
+          type: string
+        hosting:
+          type: boolean
+        vpn:
+          type: boolean
+        abuse:
+          type: boolean

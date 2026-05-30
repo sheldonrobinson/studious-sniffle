@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: ipapi.co IP address location API
+  version: "1.0.0"
+  description: |
+    OpenAPI specification for the ipapi.co IP geolocation REST API.
+    Supports IPv4, IPv6, and automatic requester IP detection.
+    Returns geolocation, timezone, currency, ASN, organization, and optional hostname.
+
+servers:
+  - url: https://ipapi.co
+
+paths:
+  /{ip}/{format}/:
+    get:
+      summary: Get geolocation data for a specific IP address
+      description: |
+        Returns full geolocation and network metadata for the given IP address.
+        Supported formats: json, xml, csv, yaml, jsonp.
+      parameters:
+        - name: ip
+          in: path
+          required: true
+          description: IPv4 or IPv6 address (e.g., 8.8.8.8)
+          schema:
+            type: string
+        - name: format
+          in: path
+          required: true
+          description: Output format
+          schema:
+            type: string
+            enum: [json, xml, csv, yaml, jsonp]
+      responses:
+        "200":
+          description: Successful lookup
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IpapiResponse"
+        "400":
+          description: Invalid IP or format
+        "500":
+          description: Server error
+
+  /json/:
+    get:
+      summary: Get geolocation data for the requester’s IP
+      description: |
+        Returns full geolocation and network metadata for the IP address
+        of the client making the request.
+      responses:
+        "200":
+          description: Successful lookup
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IpapiResponse"
+
+components:
+  schemas:
+    IpapiResponse:
+      type: object
+      properties:
+        ip:
+          type: string
+        version:
+          type: string
+          enum: [IPv4, IPv6]
+        city:
+          type: string
+        region:
+          type: string
+        region_code:
+          type: string
+        country_code:
+          type: string
+        country_code_iso3:
+          type: string
+        country_name:
+          type: string
+        country_capital:
+          type: string
+        country_tld:
+          type: string
+        continent_code:
+          type: string
+        in_eu:
+          type: boolean
+        postal:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        timezone:
+          type: string
+        utc_offset:
+          type: string
+        country_calling_code:
+          type: string
+        currency:
+          type: string
+        currency_name:
+          type: string
+        languages:
+          type: string
+        country_area:
+          type: number
+        country_population:
+          type: number
+        asn:
+          type: string
+        org:
+          type: string
+        hostname:
+          type: string
+          nullable: true
+          description: Optional add-on field
