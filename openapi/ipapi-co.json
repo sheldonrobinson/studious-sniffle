@@ -1,0 +1,551 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ipapi IP Geolocation API",
+    "version": "1.0.0",
+    "description": "OpenAPI schema for the ipapi.co IP geolocation REST API."
+  },
+  "servers": [
+    {
+      "url": "https://ipapi.co"
+    }
+  ],
+  "paths": {
+    "/{ip}/{format}/": {
+      "get": {
+        "operationId": "getIpLocationByFormat",
+        "summary": "Get complete location for a specific IP",
+        "description": "Returns full location information for the given IP address in the requested format.",
+        "parameters": [
+          {
+            "name": "ip",
+            "in": "path",
+            "required": true,
+            "description": "IPv4 or IPv6 address to look up.",
+            "schema": {
+              "type": "string",
+              "example": "8.8.8.8"
+            }
+          },
+          {
+            "name": "format",
+            "in": "path",
+            "required": true,
+            "description": "Response format.",
+            "schema": {
+              "type": "string",
+              "enum": ["json", "jsonp", "xml", "csv", "yaml"],
+              "example": "json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location information for the IP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationResponse"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/javascript": {
+                "schema": {
+                  "type": "string",
+                  "description": "JSONP-wrapped JSON."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "403": {
+            "description": "Authentication failed."
+          },
+          "404": {
+            "description": "URL not found."
+          },
+          "405": {
+            "description": "Method not allowed."
+          },
+          "429": {
+            "description": "Quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Additional error with HTTP 200 or other codes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{ip}/{field}/": {
+      "get": {
+        "operationId": "getIpLocationField",
+        "summary": "Get specific location field for a specific IP",
+        "description": "Returns a single location field as plain text for the given IP address.",
+        "parameters": [
+          {
+            "name": "ip",
+            "in": "path",
+            "required": true,
+            "description": "IPv4 or IPv6 address to look up.",
+            "schema": {
+              "type": "string",
+              "example": "8.8.8.8"
+            }
+          },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "description": "Specific location field to retrieve.",
+            "schema": {
+              "$ref": "#/components/schemas/LocationFieldName"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Requested field value as plain text.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "403": {
+            "description": "Authentication failed."
+          },
+          "404": {
+            "description": "URL not found."
+          },
+          "405": {
+            "description": "Method not allowed."
+          },
+          "429": {
+            "description": "Quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Additional error with HTTP 200 or other codes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{format}/": {
+      "get": {
+        "operationId": "getClientLocationByFormat",
+        "summary": "Get complete location for client IP",
+        "description": "Returns full location information for the client (requester) IP in the requested format.",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "path",
+            "required": true,
+            "description": "Response format.",
+            "schema": {
+              "type": "string",
+              "enum": ["json", "jsonp", "xml", "csv", "yaml"],
+              "example": "json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location information for the client IP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationResponse"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/javascript": {
+                "schema": {
+                  "type": "string",
+                  "description": "JSONP-wrapped JSON."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "403": {
+            "description": "Authentication failed."
+          },
+          "404": {
+            "description": "URL not found."
+          },
+          "405": {
+            "description": "Method not allowed."
+          },
+          "429": {
+            "description": "Quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Additional error with HTTP 200 or other codes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{field}/": {
+      "get": {
+        "operationId": "getClientLocationField",
+        "summary": "Get specific location field for client IP",
+        "description": "Returns a single location field as plain text for the client (requester) IP.",
+        "parameters": [
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "description": "Specific location field to retrieve.",
+            "schema": {
+              "$ref": "#/components/schemas/ClientFieldName"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Requested field value as plain text.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "403": {
+            "description": "Authentication failed."
+          },
+          "404": {
+            "description": "URL not found."
+          },
+          "405": {
+            "description": "Method not allowed."
+          },
+          "429": {
+            "description": "Quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Additional error with HTTP 200 or other codes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LocationResponse": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "Public IP address."
+          },
+          "version": {
+            "type": "string",
+            "description": "IP version (e.g. IPv4, IPv6)."
+          },
+          "city": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string",
+            "description": "Region name (administrative division)."
+          },
+          "region_code": {
+            "type": "string",
+            "description": "Region code."
+          },
+          "country": {
+            "type": "string",
+            "description": "2-letter country code (ISO 3166-1 alpha-2)."
+          },
+          "country_code": {
+            "type": "string",
+            "description": "2-letter country code (ISO 3166-1 alpha-2)."
+          },
+          "country_code_iso3": {
+            "type": "string",
+            "description": "3-letter country code (ISO 3166-1 alpha-3)."
+          },
+          "country_name": {
+            "type": "string",
+            "description": "Short country name."
+          },
+          "country_capital": {
+            "type": "string",
+            "description": "Capital of the country."
+          },
+          "country_tld": {
+            "type": "string",
+            "description": "Country-specific top-level domain."
+          },
+          "country_area": {
+            "type": "number",
+            "format": "double",
+            "description": "Area of the country in square kilometers."
+          },
+          "country_population": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Population of the country."
+          },
+          "continent_code": {
+            "type": "string"
+          },
+          "in_eu": {
+            "type": "boolean",
+            "description": "Whether the IP belongs to an EU member country."
+          },
+          "postal": {
+            "type": "string",
+            "description": "Postal or ZIP code."
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "latlong": {
+            "type": "string",
+            "description": "Comma-separated latitude and longitude."
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Timezone in IANA format (Area/Location)."
+          },
+          "utc_offset": {
+            "type": "string",
+            "description": "UTC offset as +HHMM or -HHMM."
+          },
+          "country_calling_code": {
+            "type": "string",
+            "description": "Country calling code (dial-in code, comma separated)."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code (ISO 4217)."
+          },
+          "currency_name": {
+            "type": "string",
+            "description": "Currency name."
+          },
+          "languages": {
+            "type": "string",
+            "description": "Comma-separated list of languages (ISO 639 codes)."
+          },
+          "asn": {
+            "type": "string",
+            "description": "Autonomous system number."
+          },
+          "org": {
+            "type": "string",
+            "description": "Organization name."
+          },
+          "hostname": {
+            "type": "string",
+            "description": "Host or domain name associated with the IP (optional add-on)."
+          },
+          "error": {
+            "type": "boolean",
+            "description": "Indicates if the response represents an error."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Error reason, if any."
+          },
+          "reserved": {
+            "type": "boolean",
+            "description": "Indicates if the IP is reserved (for reserved IP errors)."
+          }
+        },
+        "additionalProperties": true
+      },
+      "RateLimitError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "example": true
+          },
+          "reason": {
+            "type": "string",
+            "example": "RateLimited"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["error", "reason"]
+      },
+      "GenericError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "example": true
+          },
+          "reason": {
+            "type": "string",
+            "example": "Invalid IP Address"
+          },
+          "ip": {
+            "type": "string",
+            "description": "IP address related to the error, if applicable."
+          },
+          "reserved": {
+            "type": "boolean",
+            "description": "Indicates if the IP is reserved, for reserved IP errors."
+          }
+        },
+        "required": ["error", "reason"]
+      },
+      "LocationFieldName": {
+        "type": "string",
+        "description": "Valid location field names for IP-specific field requests.",
+        "enum": [
+          "city",
+          "region",
+          "region_code",
+          "country",
+          "country_name",
+          "continent_code",
+          "in_eu",
+          "postal",
+          "latitude",
+          "longitude",
+          "latlong",
+          "timezone",
+          "utc_offset",
+          "languages",
+          "country_calling_code",
+          "currency",
+          "asn",
+          "org"
+        ]
+      },
+      "ClientFieldName": {
+        "type": "string",
+        "description": "Valid field names for client IP field requests.",
+        "enum": [
+          "ip",
+          "city",
+          "region",
+          "region_code",
+          "country",
+          "country_name",
+          "continent_code",
+          "in_eu",
+          "postal",
+          "latitude",
+          "longitude",
+          "latlong",
+          "timezone",
+          "utc_offset",
+          "languages",
+          "country_calling_code",
+          "currency",
+          "asn",
+          "org"
+        ]
+      }
+    }
+  }
+}

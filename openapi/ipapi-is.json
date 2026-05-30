@@ -1,0 +1,277 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ipapi.is IP Intelligence API",
+    "version": "1.0.0",
+    "description": "OpenAPI schema for the ipapi.is IP intelligence, ASN metadata, hosting detection, VPN/proxy/TOR detection, and geolocation API."
+  },
+  "servers": [
+    { "url": "https://api.ipapi.is" }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Lookup an IP address or ASN",
+        "operationId": "lookupGet",
+        "description": "Performs an IP or ASN lookup. If `q` is omitted, the client's IP is used.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "IP address or ASN to query.",
+            "schema": { "type": "string", "example": "107.174.138.172" }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "description": "API key for authenticated requests.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lookup result or error payload.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Lookup one or multiple IP addresses",
+        "operationId": "lookupPost",
+        "description": "POST variant of the lookup API. Supports bulk lookup via `ips` array.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "q": { "type": "string", "description": "Single IP or ASN." },
+                  "ips": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Bulk lookup of up to 100 IPs."
+                  },
+                  "key": { "type": "string", "description": "API key." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lookup result(s) or error payload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/ApiResponse" }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/html": {
+      "get": {
+        "summary": "HTML formatted lookup",
+        "operationId": "lookupHtml",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTML formatted IP information.",
+            "content": { "text/html": { "schema": { "type": "string" } } }
+          }
+        }
+      }
+    },
+    "/toon": {
+      "get": {
+        "summary": "TOON formatted lookup",
+        "operationId": "lookupToon",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "TOON formatted IP information.",
+            "content": { "text/plain": { "schema": { "type": "string" } } }
+          }
+        }
+      }
+    },
+    "/csv": {
+      "get": {
+        "summary": "CSV formatted lookup",
+        "operationId": "lookupCsv",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV formatted IP information.",
+            "content": { "text/csv": { "schema": { "type": "string" } } }
+          }
+        }
+      }
+    },
+    "/text": {
+      "get": {
+        "summary": "Plain text lookup",
+        "operationId": "lookupText",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plain text key-value formatted IP information.",
+            "content": { "text/plain": { "schema": { "type": "string" } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "description": "Top-level API response. Contains either data fields or an `error` field.",
+        "properties": {
+          "error": { "type": "string", "nullable": true },
+          "elapsed_ms": { "type": "number" },
+          "ip": { "type": "string" },
+          "rir": { "type": "string" },
+          "is_bogon": { "type": "boolean" },
+          "is_mobile": { "type": "boolean" },
+          "is_satellite": { "type": "boolean" },
+          "is_crawler": {
+            "oneOf": [
+              { "type": "boolean" },
+              { "type": "string" }
+            ]
+          },
+          "is_datacenter": { "type": "boolean" },
+          "is_tor": { "type": "boolean" },
+          "is_proxy": { "type": "boolean" },
+          "is_vpn": { "type": "boolean" },
+          "is_abuser": { "type": "boolean" },
+
+          "vpn": { "$ref": "#/components/schemas/VpnInfo" },
+          "datacenter": { "$ref": "#/components/schemas/DatacenterInfo" },
+          "company": { "$ref": "#/components/schemas/CompanyInfo" },
+          "asn": { "$ref": "#/components/schemas/AsnInfo" },
+          "location": { "$ref": "#/components/schemas/LocationInfo" }
+        },
+        "additionalProperties": true
+      },
+
+      "VpnInfo": {
+        "type": "object",
+        "properties": {
+          "ip": { "type": "string" },
+          "service": { "type": "string" },
+          "url": { "type": "string" },
+          "type": { "type": "string", "enum": ["exit_node", "vpn_server"] },
+          "last_seen": { "type": "number" },
+          "last_seen_str": { "type": "string" },
+          "exit_node_region": { "type": "string" },
+          "country_code": { "type": "string" },
+          "city_name": { "type": "string" },
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" }
+        }
+      },
+
+      "DatacenterInfo": {
+        "type": "object",
+        "properties": {
+          "datacenter": { "type": "string" },
+          "domain": { "type": "string" },
+          "network": { "type": "string" },
+          "region": { "type": "string" },
+          "service": { "type": "string" },
+          "network_border_group": { "type": "string" },
+          "code": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "country": { "type": "string" }
+        }
+      },
+
+      "CompanyInfo": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "abuser_score": { "type": "string" },
+          "domain": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["hosting", "education", "government", "banking", "isp", "business"]
+          },
+          "network": { "type": "string" },
+          "netname": { "type": "string" }
+        }
+      },
+
+      "AsnInfo": {
+        "type": "object",
+        "properties": {
+          "asn": { "type": "integer" },
+          "abuser_score": { "type": "string" },
+          "route": { "type": "string" },
+          "descr": { "type": "string" },
+          "country": { "type": "string" },
+          "active": { "type": "boolean" },
+          "org": { "type": "string" },
+          "domain": { "type": "string" },
+          "abuse": { "type": "string" },
+          "type": { "type": "string" },
+          "created": { "type": "string" },
+          "updated": { "type": "string" },
+          "rir": { "type": "string" }
+        }
+      },
+
+      "LocationInfo": {
+        "type": "object",
+        "properties": {
+          "is_eu_member": { "type": "boolean" },
+          "calling_code": { "type": "string" },
+          "currency_code": { "type": "string" },
+          "continent": { "type": "string" },
+          "country": { "type": "string" },
+          "country_code": { "type": "string" },
+          "state": { "type": "string" },
+          "city": { "type": "string" },
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" },
+          "zip": { "type": "string" },
+          "timezone": { "type": "string" },
+          "local_time": { "type": "string" },
+          "local_time_unix": { "type": "integer" },
+          "is_dst": { "type": "boolean" },
+          "utcoffset": { "type": "string" },
+          "accuracy": { "type": "string" }
+        }
+      }
+    }
+  }
+}
