@@ -9,7 +9,7 @@ info:
     name: ipapi.is
     url: https://ipapi.is
 servers:
-  - url: https://ipapi.is
+  - url: https://ipapi.is:443
     description: Production server
 
 paths:

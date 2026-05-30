@@ -6,7 +6,7 @@
     "description": "OpenAPI schema for the ipapi.is IP intelligence, ASN metadata, hosting detection, VPN/proxy/TOR detection, and geolocation API."
   },
   "servers": [
-    { "url": "https://api.ipapi.is" }
+    { "url": "https://api.ipapi.is:443" }
   ],
   "paths": {
     "/": {

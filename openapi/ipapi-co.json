@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://ipapi.co"
+      "url": "https://ipapi.co:443"
     }
   ],
   "paths": {

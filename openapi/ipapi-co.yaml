@@ -8,7 +8,7 @@ info:
     Returns geolocation, timezone, currency, ASN, organization, and optional hostname.
 
 servers:
-  - url: https://ipapi.co
+  - url: https://ipapi.co:443
 
 paths:
   /{ip}/{format}/:
