@@ -1,0 +1,104 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MyIP.com JSON API",
+    "description": "Simple IP geolocation API.\n\nAccess URL: https://api.myip.com\n\nReturns the caller's public IP address, country, and ISO 3166-1 alpha-2 country code.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.myip.com",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Get caller IP information",
+        "description": "Returns the public IP address of the caller and basic geolocation information.\nIf there is no location data for an IP address, `cc` will be `\"XX\"` and `country` will be `\"Unknown\"`.",
+        "operationId": "getMyIp",
+        "responses": {
+          "200": {
+            "description": "Successful response with IP information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyIpResponse"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "Typical response",
+                    "value": {
+                      "ip": "66.249.75.9",
+                      "country": "United States",
+                      "cc": "US"
+                    }
+                  },
+                  "unknownLocation": {
+                    "summary": "Response when location is unknown",
+                    "value": {
+                      "ip": "203.0.113.10",
+                      "country": "Unknown",
+                      "cc": "XX"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error (e.g., server capacity issues)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MyIpResponse": {
+        "type": "object",
+        "description": "IP and country information for the caller.",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "format": "ipv4",
+            "description": "Public IP address of the caller."
+          },
+          "country": {
+            "type": "string",
+            "description": "IP country location in English. `\"Unknown\"` if no location data is available."
+          },
+          "cc": {
+            "type": "string",
+            "description": "Two-letter country code in ISO 3166-1 alpha-2 format. `\"XX\"` if no location data is available.",
+            "minLength": 2,
+            "maxLength": 2
+          }
+        },
+        "required": ["ip", "country", "cc"],
+        "example": {
+          "ip": "66.249.75.9",
+          "country": "United States",
+          "cc": "US"
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Generic error response (not formally documented by the API; included for client robustness).",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Error message."
+          }
+        }
+      }
+    }
+  }
+}
