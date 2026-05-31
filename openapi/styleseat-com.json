@@ -46,6 +46,24 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SearchResults"
+                },
+                "example": {
+                  "count": 1,
+                  "results": [
+                    {
+                      "id": "stylist-123",
+                      "name": "Jane Doe",
+                      "type": "stylist",
+                      "rating": 4.8,
+                      "reviews_count": 120,
+                      "location": {
+                        "city": "Newark",
+                        "state": "NJ"
+                      },
+                      "services": ["haircut", "silk-press"],
+                      "image_url": "https://example.com/jane.jpg"
+                    }
+                  ]
                 }
               }
             }
@@ -64,6 +82,7 @@
     "schemas": {
       "SearchResults": {
         "type": "object",
+        "required": ["count", "results"],
         "properties": {
           "count": {
             "type": "integer",
@@ -79,6 +98,7 @@
       },
       "SearchResultItem": {
         "type": "object",
+        "required": ["id", "name", "type"],
         "properties": {
           "id": {
             "type": "string",
@@ -96,20 +116,25 @@
           "rating": {
             "type": "number",
             "format": "float",
+            "nullable": true,
             "description": "Average user rating."
           },
           "reviews_count": {
             "type": "integer",
+            "nullable": true,
             "description": "Total number of reviews received."
           },
           "location": {
             "type": "object",
+            "nullable": true,
             "properties": {
               "city": {
-                "type": "string"
+                "type": "string",
+                "nullable": true
               },
               "state": {
-                "type": "string"
+                "type": "string",
+                "nullable": true
               }
             }
           },
@@ -118,11 +143,13 @@
             "items": {
               "type": "string"
             },
+            "nullable": true,
             "description": "List of services offered by this provider."
           },
           "image_url": {
             "type": "string",
             "format": "uri",
+            "nullable": true,
             "description": "URL to a profile or business image."
           }
         }
