@@ -13,6 +13,7 @@ paths:
   /search/{location}/{endpoint}:
     get:
       summary: Search for services, stylists, or salons
+      operationId: searchLocationEndpoint
       description: |
         Retrieves a list of results based on a specific location and endpoint.
         The endpoint can represent a specific service type, a stylist, or a salon.

@@ -14,6 +14,7 @@
   "paths": {
     "/search/{location}/{endpoint}": {
       "get": {
+		"operationId": "searchLocationEndpoint",
         "summary": "Search for services, stylists, or salons",
         "description": "Retrieves a list of results based on a specific location and endpoint.\nThe endpoint can represent a specific service type, a stylist, or a salon.",
         "parameters": [
