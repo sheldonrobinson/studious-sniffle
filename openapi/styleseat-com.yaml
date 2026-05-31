@@ -1,0 +1,97 @@
+openapi: 3.0.3
+info:
+  title: StyleSeat Search API
+  description: |
+    API for searching services, stylists, and salons on StyleSeat.
+    The API allows searching by location (CITY-STATE) and endpoint (service name, stylist, or salon).
+  version: 1.0.0
+servers:
+  - url: https://www.styleseat.com/m
+    description: Mobile web search endpoint
+
+paths:
+  /search/{location}/{endpoint}:
+    get:
+      summary: Search for services, stylists, or salons
+      description: |
+        Retrieves a list of results based on a specific location and endpoint.
+        The endpoint can represent a specific service type, a stylist, or a salon.
+      parameters:
+        - name: location
+          in: path
+          required: true
+          description: The location in CITY-string-STATE-code format (e.g., 'newark-nj', 'new-york-ny').
+          schema:
+            type: string
+            pattern: '^[a-z0-9]+-[a-z]{2}$'
+            example: 'newark-nj'
+        - name: endpoint
+          in: path
+          required: true
+          description: |
+            The search term. This can be a predefined service type, or the name of a stylist/salon.
+            Predefined services include: `acrylic-nails`, `braids`, `eyebrot-threading`, `eyelash-extensions`, `haircut`, `kids`, `locs`, `makeup-artist`, `mens-haircut`, `natural-hair`, `pedicure`, `silk-press`, `waxing`, `weaves`, or `wig`.
+          schema:
+            type: string
+            example: 'haircut'
+      responses:
+        '200':
+          description: A list of search results matching the criteria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+        '400':
+          description: Bad Request - Invalid location format or endpoint.
+        '404':
+          description: Not Found - No results found for the given location and endpoint.
+
+components:
+  schemas:
+    SearchResults:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Total number of results found.
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultItem'
+
+    SearchResultItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the professional or service.
+        name:
+          type: string
+          description: Name of the stylist, salon, or service.
+        type:
+          type: string
+          enum: [stylist, salon, service]
+          description: The category of the result.
+        rating:
+          type: number
+          format: float
+          description: Average user rating.
+        reviews_count:
+          type: integer
+          description: Total number of reviews received.
+        location:
+          type: object
+          properties:
+            city:
+              type: string
+            state:
+              type: string
+        services:
+          type: array
+          items:
+            type: string
+          description: List of services offered by this provider.
+        image_url:
+          type: string
+          format: uri
+          description: URL to a profile or business image.
