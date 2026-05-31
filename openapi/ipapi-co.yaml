@@ -1,83 +1,170 @@
 openapi: 3.0.3
 info:
-  title: ipapi.co IP address location API
+  title: ipapi.co IP Geolocation API
   version: "1.0.0"
   description: |
-    OpenAPI specification for the ipapi.co IP geolocation REST API.
-    Supports IPv4, IPv6, and automatic requester IP detection.
-    Returns geolocation, timezone, currency, ASN, organization, and optional hostname.
+    Swagger/OpenAPI specification for the ipapi.co REST API.
+    Supports IP lookup, client IP lookup, field-level lookup, and multiple output formats.
 
 servers:
   - url: https://ipapi.co:443
 
 paths:
-  /{ip}/{format}/:
+  "/{ip}/{format}/":
     get:
-      summary: Get geolocation data for a specific IP address
-      description: |
-        Returns full geolocation and network metadata for the given IP address.
-        Supported formats: json, xml, csv, yaml, jsonp.
+      summary: Get full location for a specific IP
+      operationId: getIpLocationByFormat
       parameters:
         - name: ip
           in: path
           required: true
-          description: IPv4 or IPv6 address (e.g., 8.8.8.8)
+          description: IPv4 or IPv6 address to look up.
           schema:
             type: string
+            example: "8.8.8.8"
         - name: format
           in: path
           required: true
-          description: Output format
+          description: Response format
           schema:
             type: string
-            enum: [json, xml, csv, yaml, jsonp]
+            enum: [json, jsonp, xml, csv, yaml]
+            example: json
       responses:
         "200":
-          description: Successful lookup
+          description: Location information for the IP
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/IpapiResponse"
+                $ref: "#/components/schemas/LocationResponse"
+            text/csv:
+              schema:
+                type: string
+            application/xml:
+              schema:
+                type: string
+            application/x-yaml:
+              schema:
+                type: string
+            application/javascript:
+              schema:
+                type: string
         "400":
-          description: Invalid IP or format
-        "500":
-          description: Server error
-
-  /json/:
-    get:
-      summary: Get geolocation data for the requester’s IP
-      description: |
-        Returns full geolocation and network metadata for the IP address
-        of the client making the request.
-      responses:
-        "200":
-          description: Successful lookup
+          description: Bad request
+        "403":
+          description: Authentication failed
+        "404":
+          description: Not found
+        "405":
+          description: Method not allowed
+        "429":
+          description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/IpapiResponse"
+                $ref: "#/components/schemas/ErrorResponse"
+
+  "/{ip}/{field}/":
+    get:
+      summary: Get a specific field for a specific IP
+      operationId: getIpLocationField
+      parameters:
+        - name: ip
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: field
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/FieldName"
+      responses:
+        "200":
+          description: Field value as plain text
+          content:
+            text/plain:
+              schema:
+                type: string
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+
+  "/{format}/":
+    get:
+      summary: Get full location for the client IP
+      operationId: getClientLocationByFormat
+      parameters:
+        - name: format
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [json, jsonp, xml, csv, yaml]
+      responses:
+        "200":
+          description: Location information for the client IP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationResponse"
+            text/csv:
+              schema:
+                type: string
+            application/xml:
+              schema:
+                type: string
+            application/x-yaml:
+              schema:
+                type: string
+            application/javascript:
+              schema:
+                type: string
+
+  "/{field}/":
+    get:
+      summary: Get a specific field for the client IP
+      operationId: getClientLocationField
+      parameters:
+        - name: field
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/FieldName"
+      responses:
+        "200":
+          description: Field value as plain text
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Not found
 
 components:
   schemas:
-    IpapiResponse:
+    LocationResponse:
       type: object
+      description: Full IP geolocation and network information
       properties:
         ip:
           type: string
         version:
           type: string
-          enum: [IPv4, IPv6]
         city:
           type: string
         region:
           type: string
         region_code:
           type: string
+        country:
+          type: string
+        country_name:
+          type: string
         country_code:
           type: string
         country_code_iso3:
-          type: string
-        country_name:
           type: string
         country_capital:
           type: string
@@ -91,10 +178,10 @@ components:
           type: string
         latitude:
           type: number
-          format: float
         longitude:
           type: number
-          format: float
+        latlong:
+          type: string
         timezone:
           type: string
         utc_offset:
@@ -107,15 +194,61 @@ components:
           type: string
         languages:
           type: string
-        country_area:
-          type: number
-        country_population:
-          type: number
         asn:
           type: string
         org:
           type: string
         hostname:
           type: string
-          nullable: true
-          description: Optional add-on field
+        error:
+          type: boolean
+        reason:
+          type: string
+        reserved:
+          type: boolean
+      additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+        reason:
+          type: string
+        message:
+          type: string
+        ip:
+          type: string
+        reserved:
+          type: boolean
+
+    FieldName:
+      type: string
+      description: Valid field names for field-level lookup
+      enum:
+        - ip
+        - version
+        - city
+        - region
+        - region_code
+        - country
+        - country_name
+        - country_code
+        - country_code_iso3
+        - country_capital
+        - country_tld
+        - continent_code
+        - in_eu
+        - postal
+        - latitude
+        - longitude
+        - latlong
+        - timezone
+        - utc_offset
+        - country_calling_code
+        - currency
+        - currency_name
+        - languages
+        - asn
+        - org
+        - hostname

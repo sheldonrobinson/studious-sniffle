@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "ipapi IP Geolocation API",
+    "title": "ipapi.co IP Geolocation API",
     "version": "1.0.0",
-    "description": "OpenAPI schema for the ipapi.co IP geolocation REST API."
+    "description": "OpenAPI 3.0 schema for the ipapi.co IP geolocation REST API."
   },
   "servers": [
     {
@@ -14,7 +14,7 @@
     "/{ip}/{format}/": {
       "get": {
         "operationId": "getIpLocationByFormat",
-        "summary": "Get complete location for a specific IP",
+        "summary": "Get full location for a specific IP",
         "description": "Returns full location information for the given IP address in the requested format.",
         "parameters": [
           {
@@ -78,27 +78,27 @@
             "description": "Authentication failed."
           },
           "404": {
-            "description": "URL not found."
+            "description": "Not found."
           },
           "405": {
             "description": "Method not allowed."
           },
           "429": {
-            "description": "Quota exceeded.",
+            "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RateLimitError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "default": {
-            "description": "Additional error with HTTP 200 or other codes.",
+            "description": "Unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenericError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -109,7 +109,7 @@
     "/{ip}/{field}/": {
       "get": {
         "operationId": "getIpLocationField",
-        "summary": "Get specific location field for a specific IP",
+        "summary": "Get a specific field for a specific IP",
         "description": "Returns a single location field as plain text for the given IP address.",
         "parameters": [
           {
@@ -150,27 +150,27 @@
             "description": "Authentication failed."
           },
           "404": {
-            "description": "URL not found."
+            "description": "Not found."
           },
           "405": {
             "description": "Method not allowed."
           },
           "429": {
-            "description": "Quota exceeded.",
+            "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RateLimitError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "default": {
-            "description": "Additional error with HTTP 200 or other codes.",
+            "description": "Unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenericError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -181,7 +181,7 @@
     "/{format}/": {
       "get": {
         "operationId": "getClientLocationByFormat",
-        "summary": "Get complete location for client IP",
+        "summary": "Get full location for client IP",
         "description": "Returns full location information for the client (requester) IP in the requested format.",
         "parameters": [
           {
@@ -235,27 +235,27 @@
             "description": "Authentication failed."
           },
           "404": {
-            "description": "URL not found."
+            "description": "Not found."
           },
           "405": {
             "description": "Method not allowed."
           },
           "429": {
-            "description": "Quota exceeded.",
+            "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RateLimitError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "default": {
-            "description": "Additional error with HTTP 200 or other codes.",
+            "description": "Unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenericError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -266,7 +266,7 @@
     "/{field}/": {
       "get": {
         "operationId": "getClientLocationField",
-        "summary": "Get specific location field for client IP",
+        "summary": "Get a specific field for client IP",
         "description": "Returns a single location field as plain text for the client (requester) IP.",
         "parameters": [
           {
@@ -297,27 +297,27 @@
             "description": "Authentication failed."
           },
           "404": {
-            "description": "URL not found."
+            "description": "Not found."
           },
           "405": {
             "description": "Method not allowed."
           },
           "429": {
-            "description": "Quota exceeded.",
+            "description": "Rate limit exceeded.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RateLimitError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "default": {
-            "description": "Additional error with HTTP 200 or other codes.",
+            "description": "Unexpected error.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenericError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -330,6 +330,7 @@
     "schemas": {
       "LocationResponse": {
         "type": "object",
+        "description": "Full IP geolocation and network information.",
         "properties": {
           "ip": {
             "type": "string",
@@ -364,7 +365,7 @@
           },
           "country_name": {
             "type": "string",
-            "description": "Short country name."
+            "description": "Country name."
           },
           "country_capital": {
             "type": "string",
@@ -373,16 +374,6 @@
           "country_tld": {
             "type": "string",
             "description": "Country-specific top-level domain."
-          },
-          "country_area": {
-            "type": "number",
-            "format": "double",
-            "description": "Area of the country in square kilometers."
-          },
-          "country_population": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Population of the country."
           },
           "continent_code": {
             "type": "string"
@@ -417,7 +408,7 @@
           },
           "country_calling_code": {
             "type": "string",
-            "description": "Country calling code (dial-in code, comma separated)."
+            "description": "Country calling code."
           },
           "currency": {
             "type": "string",
@@ -441,7 +432,7 @@
           },
           "hostname": {
             "type": "string",
-            "description": "Host or domain name associated with the IP (optional add-on)."
+            "description": "Host or domain name associated with the IP (if enabled)."
           },
           "error": {
             "type": "boolean",
@@ -453,12 +444,12 @@
           },
           "reserved": {
             "type": "boolean",
-            "description": "Indicates if the IP is reserved (for reserved IP errors)."
+            "description": "Indicates if the IP is reserved."
           }
         },
         "additionalProperties": true
       },
-      "RateLimitError": {
+      "ErrorResponse": {
         "type": "object",
         "properties": {
           "error": {
@@ -471,20 +462,6 @@
           },
           "message": {
             "type": "string"
-          }
-        },
-        "required": ["error", "reason"]
-      },
-      "GenericError": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "boolean",
-            "example": true
-          },
-          "reason": {
-            "type": "string",
-            "example": "Invalid IP Address"
           },
           "ip": {
             "type": "string",
@@ -492,20 +469,25 @@
           },
           "reserved": {
             "type": "boolean",
-            "description": "Indicates if the IP is reserved, for reserved IP errors."
+            "description": "Indicates if the IP is reserved."
           }
-        },
-        "required": ["error", "reason"]
+        }
       },
       "LocationFieldName": {
         "type": "string",
         "description": "Valid location field names for IP-specific field requests.",
         "enum": [
+          "ip",
+          "version",
           "city",
           "region",
           "region_code",
           "country",
+          "country_code",
+          "country_code_iso3",
           "country_name",
+          "country_capital",
+          "country_tld",
           "continent_code",
           "in_eu",
           "postal",
@@ -514,11 +496,13 @@
           "latlong",
           "timezone",
           "utc_offset",
-          "languages",
           "country_calling_code",
           "currency",
+          "currency_name",
+          "languages",
           "asn",
-          "org"
+          "org",
+          "hostname"
         ]
       },
       "ClientFieldName": {
@@ -526,11 +510,16 @@
         "description": "Valid field names for client IP field requests.",
         "enum": [
           "ip",
+          "version",
           "city",
           "region",
           "region_code",
           "country",
+          "country_code",
+          "country_code_iso3",
           "country_name",
+          "country_capital",
+          "country_tld",
           "continent_code",
           "in_eu",
           "postal",
@@ -539,11 +528,13 @@
           "latlong",
           "timezone",
           "utc_offset",
-          "languages",
           "country_calling_code",
           "currency",
+          "currency_name",
+          "languages",
           "asn",
-          "org"
+          "org",
+          "hostname"
         ]
       }
     }
