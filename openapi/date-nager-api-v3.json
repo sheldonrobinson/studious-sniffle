@@ -19,6 +19,7 @@
   "paths": {
     "/api/v3/CountryInfo/{countryCode}": {
       "get": {
+		"operationId": "getCountryInfoByCountryCode",
         "tags": [
           "Country"
         ],
@@ -62,6 +63,7 @@
     },
     "/api/v3/AvailableCountries": {
       "get": {
+		"operationId": "getAvailableCountries",
         "tags": [
           "Country"
         ],
@@ -86,6 +88,7 @@
     },
     "/api/v3/LongWeekend/{year}/{countryCode}": {
       "get": {
+		"operationId": "getLongWeekendByYearAndCountryCode",
         "tags": [
           "LongWeekend"
         ],
@@ -163,6 +166,7 @@
     },
     "/api/v3/PublicHolidays/{year}/{countryCode}": {
       "get": {
+		"operationId": "getPublicHolidayByYearAndCountryCode",
         "tags": [
           "PublicHoliday"
         ],
@@ -230,6 +234,7 @@
     },
     "/api/v3/IsTodayPublicHoliday/{countryCode}": {
       "get": {
+		"operationId": "getIsTodayPublicHolidayByCountryCode",
         "tags": [
           "PublicHoliday"
         ],
@@ -295,6 +300,7 @@
     },
     "/api/v3/NextPublicHolidays/{countryCode}": {
       "get": {
+		"operationId": "getNextPublicHolidaysByCountryCode",
         "tags": [
           "PublicHoliday"
         ],
@@ -337,6 +343,7 @@
     },
     "/api/v3/NextPublicHolidaysWorldwide": {
       "get": {
+		"operationId": "getNextPublicHolidaysWorldwide",
         "tags": [
           "PublicHoliday"
         ],
@@ -367,6 +374,7 @@
     },
     "/api/v3/Version": {
       "get": {
+		"operationId": "getVersion",
         "tags": [
           "Version"
         ],
