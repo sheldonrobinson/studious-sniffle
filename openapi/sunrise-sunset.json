@@ -1,0 +1,438 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Sunrise-Sunset Times API",
+    "version": "1.0.0",
+    "description": "Free API that provides sunrise, sunset, and related solar event times for a given latitude and longitude.\n\nBase URL: `https://api.sunrise-sunset.org`",
+    "termsOfService": "https://sunrise-sunset.org/api",
+    "contact": {
+      "name": "Sunrise-Sunset.org",
+      "url": "https://sunrise-sunset.org/api"
+    },
+    "license": {
+      "name": "Attribution Required",
+      "url": "https://sunrise-sunset.org/api"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.sunrise-sunset.org",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/json": {
+      "get": {
+        "operationId": "getSunriseSunsetTimes",
+        "summary": "Get sunrise, sunset, and solar event times",
+        "description": "Returns sunrise, sunset, solar noon, day length, and twilight times for a given latitude and longitude.\n\nUnless a `tzid` is provided, all times are in UTC and do not include daylight saving time adjustments.",
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "description": "Latitude in decimal degrees.",
+            "schema": {
+              "type": "number",
+              "format": "float",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "example": 36.72016
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": true,
+            "description": "Longitude in decimal degrees.",
+            "schema": {
+              "type": "number",
+              "format": "float",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "example": -4.42034
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Date for which to retrieve times. Accepts `YYYY-MM-DD`, other date formats, and relative values like `today`. Defaults to the current date if omitted.",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "today": {
+                "summary": "Today",
+                "value": "today"
+              },
+              "specificDate": {
+                "summary": "Specific date",
+                "value": "2026-06-01"
+              }
+            }
+          },
+          {
+            "name": "formatted",
+            "in": "query",
+            "required": false,
+            "description": "Whether to format times as human-readable strings (`1`, default) or ISO 8601 (`0`). When `0`, time values are ISO 8601 strings and `day_length` is expressed in seconds.",
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1],
+              "default": 1
+            },
+            "example": 0
+          },
+          {
+            "name": "tzid",
+            "in": "query",
+            "required": false,
+            "description": "Timezone identifier (e.g. `UTC`, `Africa/Lagos`, `Asia/Hong_Kong`, `Europe/Lisbon`). If provided, times in the response are referenced to the given time zone.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Europe/Lisbon"
+          },
+          {
+            "name": "callback",
+            "in": "query",
+            "required": false,
+            "description": "Callback function name for JSONP responses (primarily for browser-based usage).",
+            "schema": {
+              "type": "string"
+            },
+            "example": "mycallback"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with sunrise, sunset, and related solar event times.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SunriseSunsetResponse"
+                },
+                "examples": {
+                  "formattedTimes": {
+                    "summary": "Response with formatted times (default formatted=1)",
+                    "value": {
+                      "results": {
+                        "sunrise": "7:27:02 AM",
+                        "sunset": "5:05:55 PM",
+                        "solar_noon": "12:16:28 PM",
+                        "day_length": "9:38:53",
+                        "civil_twilight_begin": "6:58:14 AM",
+                        "civil_twilight_end": "5:34:43 PM",
+                        "nautical_twilight_begin": "6:25:47 AM",
+                        "nautical_twilight_end": "6:07:10 PM",
+                        "astronomical_twilight_begin": "5:54:14 AM",
+                        "astronomical_twilight_end": "6:38:43 PM"
+                      },
+                      "status": "OK",
+                      "tzid": "UTC"
+                    }
+                  },
+                  "isoTimes": {
+                    "summary": "Response with ISO 8601 times (formatted=0)",
+                    "value": {
+                      "results": {
+                        "sunrise": "2015-05-21T05:05:35+00:00",
+                        "sunset": "2015-05-21T19:22:59+00:00",
+                        "solar_noon": "2015-05-21T12:14:17+00:00",
+                        "day_length": 51444,
+                        "civil_twilight_begin": "2015-05-21T04:36:17+00:00",
+                        "civil_twilight_end": "2015-05-21T19:52:17+00:00",
+                        "nautical_twilight_begin": "2015-05-21T04:00:13+00:00",
+                        "nautical_twilight_end": "2015-05-21T20:28:21+00:00",
+                        "astronomical_twilight_begin": "2015-05-21T03:20:49+00:00",
+                        "astronomical_twilight_end": "2015-05-21T21:07:45+00:00"
+                      },
+                      "status": "OK",
+                      "tzid": "UTC"
+                    }
+                  },
+                  "invalidRequest": {
+                    "summary": "Invalid request (missing or invalid lat/lng)",
+                    "value": {
+                      "results": {},
+                      "status": "INVALID_REQUEST",
+                      "tzid": "UTC"
+                    }
+                  },
+                  "invalidDate": {
+                    "summary": "Invalid date parameter",
+                    "value": {
+                      "results": {},
+                      "status": "INVALID_DATE",
+                      "tzid": "UTC"
+                    }
+                  },
+                  "invalidTzid": {
+                    "summary": "Invalid timezone identifier",
+                    "value": {
+                      "results": {
+                        "sunrise": "7:27:02 AM",
+                        "sunset": "5:05:55 PM",
+                        "solar_noon": "12:16:28 PM",
+                        "day_length": "9:38:53",
+                        "civil_twilight_begin": "6:58:14 AM",
+                        "civil_twilight_end": "5:34:43 PM",
+                        "nautical_twilight_begin": "6:25:47 AM",
+                        "nautical_twilight_end": "6:07:10 PM",
+                        "astronomical_twilight_begin": "5:54:14 AM",
+                        "astronomical_twilight_end": "6:38:43 PM"
+                      },
+                      "status": "INVALID_TZID",
+                      "tzid": "UTC"
+                    }
+                  },
+                  "unknownError": {
+                    "summary": "Unknown server error",
+                    "value": {
+                      "results": {},
+                      "status": "UNKNOWN_ERROR",
+                      "tzid": "UTC"
+                    }
+                  }
+                }
+              },
+              "application/javascript": {
+                "description": "JSONP response when `callback` parameter is provided.",
+                "schema": {
+                  "type": "string",
+                  "description": "JavaScript function call wrapping the JSON payload."
+                },
+                "example": "mycallback({\"results\":{\"sunrise\":\"7:27:02 AM\",\"sunset\":\"5:05:55 PM\",\"solar_noon\":\"12:16:28 PM\",\"day_length\":\"9:38:53\",\"civil_twilight_begin\":\"6:58:14 AM\",\"civil_twilight_end\":\"5:34:43 PM\",\"nautical_twilight_begin\":\"6:25:47 AM\",\"nautical_twilight_end\":\"6:07:10 PM\",\"astronomical_twilight_begin\":\"5:54:14 AM\",\"astronomical_twilight_end\":\"6:38:43 PM\"},\"status\":\"OK\",\"tzid\":\"UTC\"});"
+              }
+            }
+          },
+          "400": {
+            "description": "Client error (invalid parameters). Note: The API typically returns HTTP 200 with a non-OK `status` field; this status code is included for completeness for client implementations.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SunriseSunsetResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error. Note: The API typically returns HTTP 200 with `status` = `UNKNOWN_ERROR`; this status code is included for completeness.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SunriseSunsetResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "SunriseSunset"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SunriseSunsetResultsFormatted": {
+        "type": "object",
+        "description": "Solar event times when `formatted=1` (default). Times are human-readable strings; `day_length` is `HH:MM:SS`.",
+        "properties": {
+          "sunrise": {
+            "type": "string",
+            "description": "Time of sunrise.",
+            "example": "7:27:02 AM"
+          },
+          "sunset": {
+            "type": "string",
+            "description": "Time of sunset.",
+            "example": "5:05:55 PM"
+          },
+          "solar_noon": {
+            "type": "string",
+            "description": "Time of solar noon.",
+            "example": "12:16:28 PM"
+          },
+          "day_length": {
+            "type": "string",
+            "description": "Length of the day in `HH:MM:SS`.",
+            "example": "9:38:53"
+          },
+          "civil_twilight_begin": {
+            "type": "string",
+            "description": "Start of civil twilight.",
+            "example": "6:58:14 AM"
+          },
+          "civil_twilight_end": {
+            "type": "string",
+            "description": "End of civil twilight.",
+            "example": "5:34:43 PM"
+          },
+          "nautical_twilight_begin": {
+            "type": "string",
+            "description": "Start of nautical twilight.",
+            "example": "6:25:47 AM"
+          },
+          "nautical_twilight_end": {
+            "type": "string",
+            "description": "End of nautical twilight.",
+            "example": "6:07:10 PM"
+          },
+          "astronomical_twilight_begin": {
+            "type": "string",
+            "description": "Start of astronomical twilight.",
+            "example": "5:54:14 AM"
+          },
+          "astronomical_twilight_end": {
+            "type": "string",
+            "description": "End of astronomical twilight.",
+            "example": "6:38:43 PM"
+          }
+        },
+        "required": [
+          "sunrise",
+          "sunset",
+          "solar_noon",
+          "day_length",
+          "civil_twilight_begin",
+          "civil_twilight_end",
+          "nautical_twilight_begin",
+          "nautical_twilight_end",
+          "astronomical_twilight_begin",
+          "astronomical_twilight_end"
+        ]
+      },
+      "SunriseSunsetResultsIso": {
+        "type": "object",
+        "description": "Solar event times when `formatted=0`. Times are ISO 8601 strings; `day_length` is an integer number of seconds.",
+        "properties": {
+          "sunrise": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time of sunrise in ISO 8601 format.",
+            "example": "2015-05-21T05:05:35+00:00"
+          },
+          "sunset": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time of sunset in ISO 8601 format.",
+            "example": "2015-05-21T19:22:59+00:00"
+          },
+          "solar_noon": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time of solar noon in ISO 8601 format.",
+            "example": "2015-05-21T12:14:17+00:00"
+          },
+          "day_length": {
+            "type": "integer",
+            "description": "Length of the day in seconds.",
+            "example": 51444
+          },
+          "civil_twilight_begin": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of civil twilight in ISO 8601 format.",
+            "example": "2015-05-21T04:36:17+00:00"
+          },
+          "civil_twilight_end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of civil twilight in ISO 8601 format.",
+            "example": "2015-05-21T19:52:17+00:00"
+          },
+          "nautical_twilight_begin": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of nautical twilight in ISO 8601 format.",
+            "example": "2015-05-21T04:00:13+00:00"
+          },
+          "nautical_twilight_end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of nautical twilight in ISO 8601 format.",
+            "example": "2015-05-21T20:28:21+00:00"
+          },
+          "astronomical_twilight_begin": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of astronomical twilight in ISO 8601 format.",
+            "example": "2015-05-21T03:20:49+00:00"
+          },
+          "astronomical_twilight_end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of astronomical twilight in ISO 8601 format.",
+            "example": "2015-05-21T21:07:45+00:00"
+          }
+        },
+        "required": [
+          "sunrise",
+          "sunset",
+          "solar_noon",
+          "day_length",
+          "civil_twilight_begin",
+          "civil_twilight_end",
+          "nautical_twilight_begin",
+          "nautical_twilight_end",
+          "astronomical_twilight_begin",
+          "astronomical_twilight_end"
+        ]
+      },
+      "SunriseSunsetResponse": {
+        "type": "object",
+        "description": "Top-level response object for the Sunrise-Sunset API.",
+        "properties": {
+          "results": {
+            "description": "Solar event times for the requested location and date. The structure depends on the `formatted` parameter.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SunriseSunsetResultsFormatted"
+              },
+              {
+                "$ref": "#/components/schemas/SunriseSunsetResultsIso"
+              },
+              {
+                "type": "object",
+                "description": "Empty object when the request is invalid or an error occurs.",
+                "additionalProperties": false,
+                "example": {}
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the request.",
+            "enum": [
+              "OK",
+              "INVALID_REQUEST",
+              "INVALID_DATE",
+              "UNKNOWN_ERROR",
+              "INVALID_TZID"
+            ],
+            "example": "OK"
+          },
+          "tzid": {
+            "type": "string",
+            "description": "Timezone identifier used for the response. If `tzid` parameter is invalid, this will typically be `UTC` and `status` will be `INVALID_TZID`.",
+            "example": "UTC"
+          }
+        },
+        "required": [
+          "results",
+          "status",
+          "tzid"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "SunriseSunset",
+      "description": "Operations for retrieving sunrise, sunset, and solar event times."
+    }
+  ]
+}
+
