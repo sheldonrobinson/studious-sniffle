@@ -1,0 +1,569 @@
+openapi: 3.0.3
+info:
+  title: LRCLIB API
+  description: |
+    The LRCLIB API provides access to a crowd-sourced lyrics database supporting both
+    plain and LRC-synced (time-stamped) lyrics. This API is openly accessible — no
+    API key or registration is required.
+
+    **Rate limiting:** None.
+
+    **User-Agent recommendation:** While optional, including a descriptive `User-Agent`
+    header in your requests is encouraged for application developers. For example:
+    `LRCGET v0.2.0 (https://github.com/tranxuanthang/lrcget)`
+
+    **Note:** The `/api/publish` and `/api/request-challenge` endpoints are experimental
+    and subject to change.
+  version: 1.0.0
+  contact:
+    url: https://lrclib.net
+  license:
+    name: Public API — No key required
+    url: https://lrclib.net/docs
+
+servers:
+  - url: https://lrclib.net
+    description: LRCLIB production server
+
+tags:
+  - name: Lyrics
+    description: Retrieve lyrics by track signature or database ID
+  - name: Search
+    description: Search for lyrics records using keywords
+  - name: Publish
+    description: Submit new lyrics to the LRCLIB database
+  - name: Challenge
+    description: Proof-of-work challenge flow for publish authentication
+
+paths:
+
+  /api/get:
+    get:
+      tags:
+        - Lyrics
+      summary: Get lyrics by track signature
+      operationId: getLyricsBySignature
+      description: |
+        Finds the best-matching lyrics for a track using its exact signature
+        (title, artist, album, and duration).
+
+        Each new track request may query external sources if lyrics are not yet
+        cached internally, so response time can vary. Use `/api/get-cached` to
+        restrict lookups to the internal database only.
+
+        **Duration matching:** LRCLIB matches records within ±2 seconds of the
+        provided duration value.
+      parameters:
+        - name: track_name
+          in: query
+          required: true
+          description: Title of the track.
+          schema:
+            type: string
+          example: I Want to Live
+        - name: artist_name
+          in: query
+          required: true
+          description: Name of the artist.
+          schema:
+            type: string
+          example: Borislav Slavov
+        - name: album_name
+          in: query
+          required: true
+          description: Name of the album.
+          schema:
+            type: string
+          example: "Baldur's Gate 3 (Original Game Soundtrack)"
+        - name: duration
+          in: query
+          required: true
+          description: Track duration in seconds.
+          schema:
+            type: number
+            format: float
+            minimum: 0
+          example: 233
+      responses:
+        "200":
+          description: Lyrics record found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LyricsRecord"
+              example:
+                id: 3396226
+                trackName: I Want to Live
+                artistName: Borislav Slavov
+                albumName: "Baldur's Gate 3 (Original Game Soundtrack)"
+                duration: 233
+                instrumental: false
+                plainLyrics: "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n"
+                syncedLyrics: "[00:17.12] I feel your breath upon my neck\n...[03:20.31] The clock won't stop and this is what we get\n[03:25.72] "
+        "404":
+          description: Track not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 404
+                name: TrackNotFound
+                message: Failed to find specified track
+
+  /api/get-cached:
+    get:
+      tags:
+        - Lyrics
+      summary: Get lyrics by track signature (cached only)
+      operationId: getLyricsBySignatureCached
+      description: |
+        Identical to `/api/get` but **only** searches the internal LRCLIB database.
+        External sources are never queried, making responses consistently fast.
+
+        Use this endpoint when latency is a concern and a cache miss (404) is an
+        acceptable outcome.
+
+        **Duration matching:** Same ±2-second tolerance as `/api/get`.
+      parameters:
+        - name: track_name
+          in: query
+          required: true
+          description: Title of the track.
+          schema:
+            type: string
+          example: Dragonborn
+        - name: artist_name
+          in: query
+          required: true
+          description: Name of the artist.
+          schema:
+            type: string
+          example: Jeremy Soule
+        - name: album_name
+          in: query
+          required: true
+          description: Name of the album.
+          schema:
+            type: string
+          example: "The Elder Scrolls V: Skyrim: Original Game Soundtrack"
+        - name: duration
+          in: query
+          required: true
+          description: Track duration in seconds.
+          schema:
+            type: number
+            format: float
+            minimum: 0
+          example: 236
+      responses:
+        "200":
+          description: Lyrics record found in the internal cache.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LyricsRecord"
+              example:
+                id: 1234567
+                trackName: Dragonborn
+                artistName: Jeremy Soule
+                albumName: "The Elder Scrolls V: Skyrim: Original Game Soundtrack"
+                duration: 236
+                instrumental: false
+                plainLyrics: "Dovahkiin, Dovahkiin, naal ok zin los vahriin...\n"
+                syncedLyrics: "[00:05.00] Dovahkiin, Dovahkiin, naal ok zin los vahriin...\n"
+        "404":
+          description: Track not found in the internal cache.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 404
+                name: TrackNotFound
+                message: Failed to find specified track
+
+  /api/get/{id}:
+    get:
+      tags:
+        - Lyrics
+      summary: Get lyrics by LRCLIB ID
+      operationId: getLyricsById
+      description: |
+        Retrieves a single lyrics record by its unique LRCLIB numeric ID.
+        IDs can be discovered via the `/api/search` endpoint or stored from
+        previous `/api/get` responses.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique numeric ID of the lyrics record.
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          example: 3396226
+      responses:
+        "200":
+          description: Lyrics record found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LyricsRecord"
+              example:
+                id: 3396226
+                trackName: I Want to Live
+                artistName: Borislav Slavov
+                albumName: "Baldur's Gate 3 (Original Game Soundtrack)"
+                duration: 233
+                instrumental: false
+                plainLyrics: "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n"
+                syncedLyrics: "[00:17.12] I feel your breath upon my neck\n...[03:20.31] The clock won't stop and this is what we get\n[03:25.72] "
+        "404":
+          description: No record found for the given ID.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 404
+                name: TrackNotFound
+                message: Failed to find specified track
+
+  /api/search:
+    get:
+      tags:
+        - Search
+      summary: Search for lyrics records
+      operationId: searchLyrics
+      description: |
+        Searches the LRCLIB database and returns an array of matching lyrics records.
+
+        **At least one** of `q` or `track_name` must be provided. Additional fields
+        (`artist_name`, `album_name`) narrow results further.
+
+        **Limitations (current):**
+        - Maximum of **20 results** returned.
+        - **No pagination** support.
+
+        Both limitations are subject to change in future API versions.
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: |
+            General keyword search across **any** field (track title, artist name,
+            or album name). Either `q` or `track_name` must be present.
+          schema:
+            type: string
+          example: still alive portal
+        - name: track_name
+          in: query
+          required: false
+          description: |
+            Keyword search restricted to the track title field.
+            Either `q` or `track_name` must be present.
+          schema:
+            type: string
+          example: "22"
+        - name: artist_name
+          in: query
+          required: false
+          description: Keyword search restricted to the artist name field.
+          schema:
+            type: string
+          example: taylor swift
+        - name: album_name
+          in: query
+          required: false
+          description: Keyword search restricted to the album name field.
+          schema:
+            type: string
+          example: Red
+      responses:
+        "200":
+          description: |
+            Array of matching lyrics records. Returns an empty array when no
+            records match the query.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LyricsRecord"
+              example:
+                - id: 9876543
+                  trackName: "22"
+                  artistName: Taylor Swift
+                  albumName: Red
+                  duration: 231
+                  instrumental: false
+                  plainLyrics: "It feels like a perfect night...\n"
+                  syncedLyrics: "[00:02.50] It feels like a perfect night...\n"
+        "400":
+          description: |
+            Bad request — neither `q` nor `track_name` was provided.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 400
+                name: BadRequest
+                message: "At least one of 'q' or 'track_name' must be provided"
+
+  /api/publish:
+    post:
+      tags:
+        - Publish
+      summary: Publish new lyrics
+      operationId: publishLyrics
+      description: |
+        Submits a new lyrics record to the LRCLIB database. No registration is
+        required — publishing is anonymous.
+
+        **Instrumental tracks:** If both `plainLyrics` and `syncedLyrics` are
+        empty strings, the track is marked as instrumental.
+
+        **Revisions:** Publishing lyrics for a track that already has records
+        creates a new revision; all previous revisions are preserved.
+
+        ### Obtaining a Publish Token
+
+        Every request must include a valid, single-use **Publish Token** in the
+        `X-Publish-Token` header. The token has the format `{prefix}:{nonce}`.
+
+        1. Call `POST /api/request-challenge` to receive a `prefix` and `target`.
+        2. Solve the proof-of-work challenge: find a `nonce` such that
+           `SHA-256(prefix + nonce)` produces a hash lexicographically ≤ `target`.
+        3. Set `X-Publish-Token: {prefix}:{nonce}` on this request.
+
+        Each token is single-use and each challenge expires after **5 minutes**.
+      security: []
+      parameters:
+        - name: X-Publish-Token
+          in: header
+          required: true
+          description: |
+            Single-use publish token in the format `{prefix}:{nonce}`, obtained
+            by solving the proof-of-work challenge from `/api/request-challenge`.
+          schema:
+            type: string
+            pattern: "^[A-Za-z0-9]+:[A-Za-z0-9]+$"
+          example: "VXMwW2qPfW2gkCNSl1i708NJkDghtAyU:0000042abc"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublishRequest"
+            example:
+              trackName: I Want to Live
+              artistName: Borislav Slavov
+              albumName: "Baldur's Gate 3 (Original Game Soundtrack)"
+              duration: 233
+              plainLyrics: "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n"
+              syncedLyrics: "[00:17.12] I feel your breath upon my neck\n...[03:20.31] The clock won't stop and this is what we get\n[03:25.72] "
+      responses:
+        "201":
+          description: Lyrics published successfully. No response body is returned.
+        "400":
+          description: The provided Publish Token is missing, malformed, or incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: 400
+                name: IncorrectPublishTokenError
+                message: The provided publish token is incorrect
+
+  /api/request-challenge:
+    post:
+      tags:
+        - Challenge
+      summary: Request a proof-of-work challenge
+      operationId: requestChallenge
+      description: |
+        Generates a fresh `prefix` / `target` pair for the proof-of-work
+        cryptographic challenge required to publish lyrics.
+
+        The caller must find a `nonce` such that:
+        ```
+        SHA-256(prefix + nonce) <= target   (lexicographic hex comparison)
+        ```
+        The resulting Publish Token is `{prefix}:{nonce}`.
+
+        **Challenge expiry:** 5 minutes from issuance.
+
+        Each challenge should be solved fresh immediately before calling
+        `/api/publish` — do not cache challenges across sessions.
+      security: []
+      requestBody:
+        required: false
+        description: No request body is required for this endpoint.
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: A fresh challenge pair is returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeResponse"
+              example:
+                prefix: VXMwW2qPfW2gkCNSl1i708NJkDghtAyU
+                target: "000000FF00000000000000000000000000000000000000000000000000000000"
+
+components:
+  schemas:
+
+    LyricsRecord:
+      type: object
+      description: A single lyrics record stored in the LRCLIB database.
+      required:
+        - id
+        - trackName
+        - artistName
+        - albumName
+        - duration
+        - instrumental
+        - plainLyrics
+        - syncedLyrics
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique numeric identifier of the lyrics record.
+          example: 3396226
+        trackName:
+          type: string
+          description: Title of the track.
+          example: I Want to Live
+        artistName:
+          type: string
+          description: Name of the artist.
+          example: Borislav Slavov
+        albumName:
+          type: string
+          description: Name of the album.
+          example: "Baldur's Gate 3 (Original Game Soundtrack)"
+        duration:
+          type: number
+          format: float
+          description: Track duration in seconds.
+          example: 233
+        instrumental:
+          type: boolean
+          description: |
+            `true` if the track has no lyrics (instrumental).
+            When `true`, both `plainLyrics` and `syncedLyrics` will be `null` or empty.
+          example: false
+        plainLyrics:
+          type: string
+          nullable: true
+          description: |
+            Plain-text lyrics without timestamps. `null` if unavailable or the
+            track is instrumental.
+          example: "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n"
+        syncedLyrics:
+          type: string
+          nullable: true
+          description: |
+            LRC-format synchronized lyrics with `[mm:ss.xx]` timestamps per line.
+            `null` if unavailable or the track is instrumental.
+          example: "[00:17.12] I feel your breath upon my neck\n...[03:20.31] The clock won't stop and this is what we get\n[03:25.72] "
+
+    ErrorResponse:
+      type: object
+      description: Standard error payload returned on non-2xx responses.
+      required:
+        - code
+        - name
+        - message
+      properties:
+        code:
+          type: integer
+          description: HTTP status code mirrored in the response body.
+          example: 404
+        name:
+          type: string
+          description: Machine-readable error identifier.
+          example: TrackNotFound
+          enum:
+            - TrackNotFound
+            - IncorrectPublishTokenError
+            - BadRequest
+        message:
+          type: string
+          description: Human-readable description of the error.
+          example: Failed to find specified track
+
+    PublishRequest:
+      type: object
+      description: Request body for submitting a new lyrics record.
+      required:
+        - trackName
+        - artistName
+        - albumName
+        - duration
+        - plainLyrics
+        - syncedLyrics
+      properties:
+        trackName:
+          type: string
+          description: Title of the track.
+          example: I Want to Live
+        artistName:
+          type: string
+          description: Name of the artist.
+          example: Borislav Slavov
+        albumName:
+          type: string
+          description: Name of the album.
+          example: "Baldur's Gate 3 (Original Game Soundtrack)"
+        duration:
+          type: number
+          format: float
+          description: Track duration in seconds.
+          minimum: 0
+          example: 233
+        plainLyrics:
+          type: string
+          description: |
+            Plain-text lyrics. Pass an empty string for instrumental tracks.
+          example: "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n"
+        syncedLyrics:
+          type: string
+          description: |
+            LRC-format synchronized lyrics with `[mm:ss.xx]` timestamps.
+            Pass an empty string for instrumental tracks or when synced lyrics
+            are unavailable.
+          example: "[00:17.12] I feel your breath upon my neck\n...[03:20.31] The clock won't stop and this is what we get\n[03:25.72] "
+
+    ChallengeResponse:
+      type: object
+      description: |
+        A proof-of-work challenge pair. The caller must find a `nonce` such that
+        `SHA-256(prefix + nonce)` is lexicographically ≤ `target` (both as hex strings).
+        The resulting Publish Token is `{prefix}:{nonce}`.
+      required:
+        - prefix
+        - target
+      properties:
+        prefix:
+          type: string
+          description: |
+            Random prefix string issued by the server. Use this as the first
+            component when computing the SHA-256 hash.
+          example: VXMwW2qPfW2gkCNSl1i708NJkDghtAyU
+        target:
+          type: string
+          description: |
+            64-character hex string representing the difficulty ceiling.
+            A valid nonce produces a SHA-256 hash whose hex representation is
+            lexicographically ≤ this target.
+          pattern: "^[0-9A-Fa-f]{64}$"
+          example: "000000FF00000000000000000000000000000000000000000000000000000000"
