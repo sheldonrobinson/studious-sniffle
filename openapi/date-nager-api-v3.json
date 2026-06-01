@@ -10,6 +10,12 @@
     },
     "version": "v3"
   },
+  "servers": [
+    {
+      "url": "https://date.nager.at",
+      "description": "Production server"
+    }
+  ],
   "paths": {
     "/api/v3/CountryInfo/{countryCode}": {
       "get": {
@@ -453,10 +459,8 @@
             "description": "Geopolitical or continental region of the country."
           },
           "borders": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
+            "nullable": true,
             "items": {
               "$ref": "#/components/schemas/CountryInfoDto"
             },
@@ -532,35 +536,25 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "title": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "status": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
+            "nullable": true,
             "format": "int32"
           },
           "detail": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "instance": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -600,20 +594,16 @@
             "description": "Indicates if this holiday applies to the entire country."
           },
           "counties": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
+            "nullable": true,
             "items": {
               "type": "string"
             },
             "description": "ISO-3166-2 codes of the subdivisions where this holiday applies"
           },
           "launchYear": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
+            "nullable": true,
             "description": "The year the holiday was first observed.",
             "format": "int32"
           },
