@@ -1,0 +1,344 @@
+openapi: 3.0.3
+info:
+  title: Metropolitan Museum of Art Collection API
+  version: "1.0.0"
+  description: |
+    OpenAPI 3.0 specification for The Metropolitan Museum of Art Collection API.
+    Official docs: https://metmuseum.github.io/
+    Base URL: https://collectionapi.metmuseum.org/public/collection/v1
+
+servers:
+  - url: https://collectionapi.metmuseum.org/public/collection/v1
+    description: Production server
+
+paths:
+  /objects:
+    get:
+      operationId: listObjects
+      summary: List all object IDs
+      description: Returns a listing of all valid object IDs. Supports filtering by metadata date and department IDs.
+      parameters:
+        - name: metadataDate
+          in: query
+          description: Returns objects updated after this date.
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2018-10-22"
+        - name: departmentIds
+          in: query
+          description: One or more department IDs separated by '|'.
+          required: false
+          schema:
+            type: string
+            example: "3|9|12"
+      responses:
+        "200":
+          description: List of object IDs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObjectIdListResponse"
+              examples:
+                allObjects:
+                  summary: All objects
+                  value:
+                    total: 471581
+                    objectIDs: [1, 2, 3, 4, 5, 6]
+                byDepartment:
+                  summary: Filtered by departmentIds=1
+                  value:
+                    total: 1000
+                    objectIDs: [1, 2, 3]
+                byMetadataDate:
+                  summary: Filtered by metadataDate
+                  value:
+                    total: 1000
+                    objectIDs: [1, 2, 3]
+
+  /objects/{objectID}:
+    get:
+      operationId: getObject
+      summary: Get object details
+      description: Returns a full record for an object, including Open Access images.
+      parameters:
+        - name: objectID
+          in: path
+          required: true
+          description: Unique object ID.
+          schema:
+            type: integer
+            example: 45734
+      responses:
+        "200":
+          description: Object details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObjectDetail"
+              examples:
+                objectExample:
+                  summary: Example object
+                  value:
+                    objectID: 45734
+                    isHighlight: false
+                    accessionNumber: "36.100.45"
+                    accessionYear: "1936"
+                    isPublicDomain: true
+                    primaryImage: "https://images.metmuseum.org/CRDImages/as/original/DP251139.jpg"
+                    primaryImageSmall: "https://images.metmuseum.org/CRDImages/as/web-large/DP251139.jpg"
+                    additionalImages:
+                      - "https://images.metmuseum.org/CRDImages/as/original/DP251138.jpg"
+                    constituents:
+                      - constituentID: 11986
+                        role: Artist
+                        name: Kiyohara Yukinobu
+                        gender: Female
+                    department: Asian Art
+                    objectName: Hanging scroll
+                    title: Quail and Millet
+                    culture: Japan
+                    period: Edo period (1615–1868)
+                    objectDate: "late 17th century"
+                    objectBeginDate: 1667
+                    objectEndDate: 1682
+                    medium: "Ink and color on silk"
+                    dimensions: "46 5/8 x 18 3/4 in."
+                    creditLine: "The Howard Mansfield Collection, Purchase, Rogers Fund, 1936"
+                    metadataDate: "2020-09-14T12:26:37.48Z"
+                    repository: "Metropolitan Museum of Art, New York, NY"
+                    objectURL: "https://www.metmuseum.org/art/collection/search/45734"
+
+  /departments:
+    get:
+      operationId: listDepartments
+      summary: List departments
+      description: Returns all departments with IDs and display names.
+      responses:
+        "200":
+          description: List of departments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepartmentListResponse"
+              examples:
+                departmentsExample:
+                  summary: Example departments
+                  value:
+                    departments:
+                      - departmentId: 1
+                        displayName: American Decorative Arts
+                      - departmentId: 3
+                        displayName: Ancient Near Eastern Art
+                      - departmentId: 6
+                        displayName: Asian Art
+
+  /search:
+    get:
+      operationId: searchObjects
+      summary: Search objects
+      description: Search objects by keyword and optional filters.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search term.
+          schema:
+            type: string
+            example: sunflowers
+        - name: isHighlight
+          in: query
+          schema:
+            type: boolean
+            example: true
+        - name: title
+          in: query
+          schema:
+            type: boolean
+        - name: tags
+          in: query
+          schema:
+            type: boolean
+        - name: departmentId
+          in: query
+          schema:
+            type: integer
+            example: 6
+        - name: isOnView
+          in: query
+          schema:
+            type: boolean
+        - name: artistOrCulture
+          in: query
+          schema:
+            type: boolean
+        - name: medium
+          in: query
+          schema:
+            type: string
+            example: "Quilts|Silk"
+        - name: hasImages
+          in: query
+          schema:
+            type: boolean
+        - name: geoLocation
+          in: query
+          schema:
+            type: string
+            example: "France|Paris"
+        - name: dateBegin
+          in: query
+          schema:
+            type: integer
+            example: 1700
+        - name: dateEnd
+          in: query
+          schema:
+            type: integer
+            example: 1800
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+              examples:
+                basicSearch:
+                  summary: Basic search
+                  value:
+                    total: 27
+                    objectIDs: [1, 2, 3]
+                highlightSearch:
+                  summary: Highlight search
+                  value:
+                    total: 3
+                    objectIDs: [437329, 436121, 436535]
+
+components:
+  schemas:
+
+    ObjectIdListResponse:
+      type: object
+      required: [total, objectIDs]
+      properties:
+        total:
+          type: integer
+        objectIDs:
+          type: array
+          items:
+            type: integer
+
+    DepartmentListResponse:
+      type: object
+      required: [departments]
+      properties:
+        departments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Department"
+
+    Department:
+      type: object
+      required: [departmentId, displayName]
+      properties:
+        departmentId:
+          type: integer
+        displayName:
+          type: string
+
+    SearchResponse:
+      type: object
+      required: [total, objectIDs]
+      properties:
+        total:
+          type: integer
+        objectIDs:
+          type: array
+          items:
+            type: integer
+
+    ObjectDetail:
+      type: object
+      required: [objectID]
+      properties:
+        objectID:
+          type: integer
+        isHighlight:
+          type: boolean
+        accessionNumber:
+          type: string
+        accessionYear:
+          type: string
+        isPublicDomain:
+          type: boolean
+        primaryImage:
+          type: string
+          format: uri
+        primaryImageSmall:
+          type: string
+          format: uri
+        additionalImages:
+          type: array
+          items:
+            type: string
+            format: uri
+        constituents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Constituent"
+        department:
+          type: string
+        objectName:
+          type: string
+        title:
+          type: string
+        culture:
+          type: string
+        period:
+          type: string
+        objectDate:
+          type: string
+        objectBeginDate:
+          type: integer
+        objectEndDate:
+          type: integer
+        medium:
+          type: string
+        dimensions:
+          type: string
+        creditLine:
+          type: string
+        metadataDate:
+          type: string
+          format: date-time
+        repository:
+          type: string
+        objectURL:
+          type: string
+          format: uri
+
+    Constituent:
+      type: object
+      properties:
+        constituentID:
+          type: integer
+        role:
+          type: string
+        name:
+          type: string
+        gender:
+          type: string
+
+    Tag:
+      type: object
+      properties:
+        term:
+          type: string
+        AAT_URL:
+          type: string
+          format: uri
+        Wikidata_URL:
+          type: string
+          format: uri
