@@ -1,0 +1,1501 @@
+openapi: 3.1.0
+info:
+  title: TVMaze API
+  description: A free, fast and clean REST API for TV information. Returns JSON and
+    conforms to HATEOAS and HAL principles. Rate limited to 20 calls per 10 seconds
+    per IP address. Licensed under CC BY-SA.
+  version: 1.0.0
+  contact:
+    name: TVMaze API Support
+    url: https://www.tvmaze.com/api
+  license:
+    name: CC BY-SA
+    url: https://creativecommons.org/licenses/by-sa/4.0/
+servers:
+- url: https://api.tvmaze.com
+  description: TVMaze API (HTTPS)
+- url: http://api.tvmaze.com
+  description: TVMaze API (HTTP)
+tags:
+- name: Search
+  description: Search for shows and people
+- name: Schedule
+  description: TV and web/streaming schedules
+- name: Shows
+  description: Show information and sub-resources
+- name: AlternateLists
+  description: Alternate episode lists (e.g. DVD ordering)
+- name: Seasons
+  description: Season information and episodes
+- name: Episodes
+  description: Episode information and guest credits
+- name: People
+  description: Person information and credits
+- name: Updates
+  description: Recently updated shows and people
+paths:
+  /search/shows:
+    get:
+      operationId: searchShows
+      summary: Show search
+      description: Search through all shows by name using a fuzzy algorithm (fuzziness
+        value of 2). Results are ordered by relevancy.
+      tags:
+      - Search
+      parameters:
+      - name: q
+        in: query
+        required: true
+        description: The query string to search for.
+        schema:
+          type: string
+        example: girls
+      responses:
+        '200':
+          description: An array of show search results ordered by relevancy.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShowSearchResult'
+  /singlesearch/shows:
+    get:
+      operationId: singleSearchShow
+      summary: Show single search
+      description: Returns exactly one result or no result at all. Uses a fuzziness
+        of 1 to reduce false positives. Supports embedding additional information.
+      tags:
+      - Search
+      parameters:
+      - name: q
+        in: query
+        required: true
+        description: The query string to search for.
+        schema:
+          type: string
+        example: girls
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Full show information for the single best match.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Show'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /lookup/shows:
+    get:
+      operationId: lookupShow
+      summary: Show lookup
+      description: Find a show by its TheTVDB, IMDB, or TVRage ID. Returns a 301 redirect
+        to the show's URL if matched, or 404 if not found.
+      tags:
+      - Search
+      parameters:
+      - name: thetvdb
+        in: query
+        required: false
+        description: The TheTVDB ID of the show.
+        schema:
+          type: integer
+        example: 81189
+      - name: imdb
+        in: query
+        required: false
+        description: The IMDB ID of the show (e.g. tt0944947).
+        schema:
+          type: string
+        example: tt0944947
+      - name: tvrage
+        in: query
+        required: false
+        description: The TVRage ID of the show.
+        schema:
+          type: integer
+      responses:
+        '301':
+          description: Redirect to the show's canonical URL.
+          headers:
+            Location:
+              description: The canonical URL of the matched show.
+              schema:
+                type: string
+                format: uri
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /search/people:
+    get:
+      operationId: searchPeople
+      summary: People search
+      description: Search through all people in the database by name using the same
+        fuzzy mechanism as show search.
+      tags:
+      - Search
+      parameters:
+      - name: q
+        in: query
+        required: true
+        description: The query string to search for.
+        schema:
+          type: string
+        example: lauren
+      responses:
+        '200':
+          description: An array of person search results ordered by relevancy.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonSearchResult'
+  /schedule:
+    get:
+      operationId: getSchedule
+      summary: TV schedule
+      description: A complete list of episodes airing in a given country on a given
+        date. Includes only network-tied episodes (not global streaming channels like
+        Netflix). Episodes returned in air order with full show info.
+      tags:
+      - Schedule
+      parameters:
+      - name: country
+        in: query
+        required: false
+        description: 'ISO 3166-1 country code. Defaults to US. Note: use GB for the
+          United Kingdom.'
+        schema:
+          type: string
+          default: US
+        example: US
+      - name: date
+        in: query
+        required: false
+        description: ISO 8601 formatted date. Defaults to the current day.
+        schema:
+          type: string
+          format: date
+        example: '2014-12-01'
+      responses:
+        '200':
+          description: Array of schedule episodes with embedded show information.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleEpisode'
+  /schedule/web:
+    get:
+      operationId: getWebSchedule
+      summary: Web/streaming schedule
+      description: A complete list of episodes airing on web/streaming channels on
+        a given date. Omit country to get both local and global web channels. Set
+        country to ISO code for local only. Set country to empty string for global
+        only.
+      tags:
+      - Schedule
+      parameters:
+      - name: country
+        in: query
+        required: false
+        description: ISO 3166-1 country code. Omit for all channels; empty string
+          for global only.
+        schema:
+          type: string
+        example: US
+      - name: date
+        in: query
+        required: false
+        description: ISO 8601 formatted date. Defaults to the current day.
+        schema:
+          type: string
+          format: date
+        example: '2020-05-29'
+      responses:
+        '200':
+          description: Array of web schedule episodes with embedded show information.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleEpisode'
+  /schedule/full:
+    get:
+      operationId: getFullSchedule
+      summary: Full schedule
+      description: A list of all future episodes known to TVmaze, regardless of country.
+        Response is at least several MB large. Results are cached for 24 hours.
+      tags:
+      - Schedule
+      responses:
+        '200':
+          description: Array of all future episodes with embedded show information.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleEpisode'
+  /shows:
+    get:
+      operationId: getShowIndex
+      summary: Show index
+      description: A paginated list of all shows in the database with all primary
+        information. 250 results per page. Pagination is ID-based, not offset-based.
+        Results cached up to 24 hours.
+      tags:
+      - Shows
+      parameters:
+      - name: page
+        in: query
+        required: false
+        description: 0-based page number. Each page contains up to 250 shows.
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+        example: 1
+      responses:
+        '200':
+          description: Array of shows for the requested page.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Show'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}:
+    get:
+      operationId: getShow
+      summary: Show main information
+      description: Retrieve all primary information for a given show. Supports embedding
+        additional information.
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Full show object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Show'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}/episodes:
+    get:
+      operationId: getShowEpisodes
+      summary: Show episode list
+      description: A complete list of episodes for a show in airing order with full
+        episode information. Specials excluded by default.
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      - name: specials
+        in: query
+        required: false
+        description: Set to 1 to include specials in the list.
+        schema:
+          type: integer
+          enum:
+          - 1
+      responses:
+        '200':
+          description: Array of episodes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Episode'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}/alternatelists:
+    get:
+      operationId: getShowAlternateLists
+      summary: Show alternate lists
+      description: Alternate episode lists for this show, for example DVD ordering.
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      responses:
+        '200':
+          description: Array of alternate list objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlternateList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}/episodebynumber:
+    get:
+      operationId: getShowEpisodeByNumber
+      summary: Episode by number
+      description: Retrieve one specific episode from this show given its season and
+        episode numbers.
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      - name: season
+        in: query
+        required: true
+        description: The season number.
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+      - name: number
+        in: query
+        required: true
+        description: The episode number within the season.
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+      responses:
+        '200':
+          description: Full episode object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Episode'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}/episodesbydate:
+    get:
+      operationId: getShowEpisodesByDate
+      summary: Episodes by date
+      description: Retrieve all episodes from a show that have aired on a specific
+        date. Useful for daily shows.
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      - name: date
+        in: query
+        required: true
+        description: ISO 8601 formatted date.
+        schema:
+          type: string
+          format: date
+        example: '2013-07-01'
+      responses:
+        '200':
+          description: Array of episode objects aired on the given date.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Episode'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}/seasons:
+    get:
+      operationId: getShowSeasons
+      summary: Show seasons
+      description: A complete list of seasons for the given show in ascending order.
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      responses:
+        '200':
+          description: Array of season objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Season'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}/cast:
+    get:
+      operationId: getShowCast
+      summary: Show cast
+      description: A list of main cast for a show. Each item is a combination of a
+        person and a character, ordered by importance (total appearances).
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      responses:
+        '200':
+          description: Array of cast items.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CastMember'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}/crew:
+    get:
+      operationId: getShowCrew
+      summary: Show crew
+      description: A list of main crew for a show. Each item is a combination of a
+        person and their crew type.
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      responses:
+        '200':
+          description: Array of crew items.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CrewMember'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}/akas:
+    get:
+      operationId: getShowAkas
+      summary: Show AKAs
+      description: A list of AKAs (aliases) for a show. A null country indicates the
+        AKA is in the show's original country.
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      responses:
+        '200':
+          description: Array of AKA objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AKA'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /shows/{id}/images:
+    get:
+      operationId: getShowImages
+      summary: Show images
+      description: 'A list of all images available for this show. Image types: poster,
+        banner, background, typography, or null for legacy unclassified images.'
+      tags:
+      - Shows
+      parameters:
+      - $ref: '#/components/parameters/ShowId'
+      responses:
+        '200':
+          description: Array of image objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Image'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /alternatelists/{id}:
+    get:
+      operationId: getAlternateList
+      summary: Alternate list
+      description: Retrieve an alternate episode list by its ID. Supports embedding
+        alternateepisodes.
+      tags:
+      - AlternateLists
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The TVmaze ID of the alternate list.
+        schema:
+          type: integer
+        example: 1
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Alternate list object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlternateList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /alternatelists/{id}/alternateepisodes:
+    get:
+      operationId: getAlternateListEpisodes
+      summary: Alternate list episodes
+      description: Retrieve all alternate episodes for a given alternate list. Supports
+        embedding episodes.
+      tags:
+      - AlternateLists
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The TVmaze ID of the alternate list.
+        schema:
+          type: integer
+        example: 1
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Array of alternate episode objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlternateEpisode'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /seasons/{id}/episodes:
+    get:
+      operationId: getSeasonEpisodes
+      summary: Season episodes
+      description: A list of episodes in this season, always including specials. Supports
+        embedding additional information (e.g. guestcast).
+      tags:
+      - Seasons
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The TVmaze ID of the season.
+        schema:
+          type: integer
+        example: 1
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Array of episode objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Episode'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /episodes/{id}:
+    get:
+      operationId: getEpisode
+      summary: Episode main information
+      description: Retrieve all primary information for a given episode. Supports
+        embedding additional information (e.g. show).
+      tags:
+      - Episodes
+      parameters:
+      - $ref: '#/components/parameters/EpisodeId'
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Full episode object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Episode'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /episodes/{id}/guestcast:
+    get:
+      operationId: getEpisodeGuestCast
+      summary: Episode guest cast
+      description: Retrieve all guest cast starring in a given episode.
+      tags:
+      - Episodes
+      parameters:
+      - $ref: '#/components/parameters/EpisodeId'
+      responses:
+        '200':
+          description: Array of guest cast members.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CastMember'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /episodes/{id}/guestcrew:
+    get:
+      operationId: getEpisodeGuestCrew
+      summary: Episode guest crew
+      description: Retrieve all guest crew working on a given episode.
+      tags:
+      - Episodes
+      parameters:
+      - $ref: '#/components/parameters/EpisodeId'
+      responses:
+        '200':
+          description: Array of guest crew members.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CrewMember'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /people:
+    get:
+      operationId: getPeopleIndex
+      summary: Person index
+      description: A paginated list of all people in the database. Up to 1000 results
+        per page. Same pagination mechanism as the show index.
+      tags:
+      - People
+      parameters:
+      - name: page
+        in: query
+        required: false
+        description: 0-based page number.
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      responses:
+        '200':
+          description: Array of person objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /people/{id}:
+    get:
+      operationId: getPerson
+      summary: Person main information
+      description: Retrieve all primary information for a given person. Supports embedding
+        additional information (e.g. castcredits).
+      tags:
+      - People
+      parameters:
+      - $ref: '#/components/parameters/PersonId'
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Full person object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /people/{id}/castcredits:
+    get:
+      operationId: getPersonCastCredits
+      summary: Person cast credits
+      description: Retrieve all show-level cast credits for a person. A cast credit
+        is a combination of a show and a character. Supports embedding show and/or
+        character.
+      tags:
+      - People
+      parameters:
+      - $ref: '#/components/parameters/PersonId'
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Array of cast credit objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CastCredit'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /people/{id}/crewcredits:
+    get:
+      operationId: getPersonCrewCredits
+      summary: Person crew credits
+      description: Retrieve all show-level crew credits for a person. A crew credit
+        is a combination of a show and a crew type. Supports embedding show.
+      tags:
+      - People
+      parameters:
+      - $ref: '#/components/parameters/PersonId'
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Array of crew credit objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CrewCredit'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /people/{id}/guestcastcredits:
+    get:
+      operationId: getPersonGuestCastCredits
+      summary: Person guest cast credits
+      description: Retrieve all episode-level guest cast credits for a person. A guest
+        cast credit is a combination of an episode and a character. Supports embedding
+        episode and/or character.
+      tags:
+      - People
+      parameters:
+      - $ref: '#/components/parameters/PersonId'
+      - $ref: '#/components/parameters/EmbedParam'
+      responses:
+        '200':
+          description: Array of guest cast credit objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GuestCastCredit'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /updates/shows:
+    get:
+      operationId: getShowUpdates
+      summary: Show updates
+      description: A map of all shows and their last-updated timestamps. Updating
+        any direct or indirect child (e.g. episodes, gallery items) also marks the
+        show updated. Can be filtered by time period.
+      tags:
+      - Updates
+      parameters:
+      - name: since
+        in: query
+        required: false
+        description: Filter to shows updated in the given period.
+        schema:
+          type: string
+          enum:
+          - day
+          - week
+          - month
+      responses:
+        '200':
+          description: Object mapping show IDs (as string keys) to Unix timestamps
+            of last update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatesMap'
+  /updates/people:
+    get:
+      operationId: getPersonUpdates
+      summary: Person updates
+      description: A map of all people and their last-updated timestamps. A person
+        is updated when their attributes change or when a cast/crew credit is created
+        or deleted.
+      tags:
+      - Updates
+      parameters:
+      - name: since
+        in: query
+        required: false
+        description: Filter to people updated in the given period.
+        schema:
+          type: string
+          enum:
+          - day
+          - week
+          - month
+      responses:
+        '200':
+          description: Object mapping person IDs (as string keys) to Unix timestamps
+            of last update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatesMap'
+components:
+  parameters:
+    ShowId:
+      name: id
+      in: path
+      required: true
+      description: The TVmaze ID of the show.
+      schema:
+        type: integer
+      example: 1
+    EpisodeId:
+      name: id
+      in: path
+      required: true
+      description: The TVmaze ID of the episode.
+      schema:
+        type: integer
+      example: 1
+    PersonId:
+      name: id
+      in: path
+      required: true
+      description: The TVmaze ID of the person.
+      schema:
+        type: integer
+      example: 1
+    EmbedParam:
+      name: embed
+      in: query
+      required: false
+      description: 'Embed related resources in the response. Use array syntax (embed[]=episodes&embed[]=cast)
+        for multiple. Common values: episodes, cast, crew, guestcast, nextepisode,
+        previousepisode, show, seasons, akas, images, castcredits, crewcredits, alternateepisodes,
+        character.'
+      schema:
+        oneOf:
+        - type: string
+        - type: array
+          items:
+            type: string
+      examples:
+        single:
+          summary: Embed episodes
+          value: episodes
+        multiple:
+          summary: Embed cast and episodes
+          value:
+          - episodes
+          - cast
+  responses:
+    NotFound:
+      description: The requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Rate limit exceeded (20 calls per 10 seconds per IP).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: 404 not found
+    UpdatesMap:
+      type: object
+      description: A map of resource ID (string) to Unix timestamp (integer) of last
+        update.
+      additionalProperties:
+        type: integer
+      example:
+        '1': 1704067200
+        '2': 1704153600
+    ImageSet:
+      type:
+      - object
+      - 'null'
+      description: A set of image URLs in different sizes.
+      properties:
+        medium:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: Fixed resized dimensions URL.
+        original:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: Original uploaded resolution URL.
+    Image:
+      type: object
+      description: A full image entry for a show.
+      properties:
+        id:
+          type: integer
+        type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - poster
+          - banner
+          - background
+          - typography
+          - null
+          description: The image type, or null for legacy unclassified images.
+        main:
+          type: boolean
+          description: Whether this is the primary image of the given type.
+        resolutions:
+          type: object
+          properties:
+            original:
+              $ref: '#/components/schemas/ImageResolution'
+            medium:
+              $ref: '#/components/schemas/ImageResolution'
+    ImageResolution:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        width:
+          type:
+          - integer
+          - 'null'
+        height:
+          type:
+          - integer
+          - 'null'
+    Network:
+      type:
+      - object
+      - 'null'
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: HBO
+        country:
+          $ref: '#/components/schemas/Country'
+        officialSite:
+          type:
+          - string
+          - 'null'
+          format: uri
+    WebChannel:
+      type:
+      - object
+      - 'null'
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: Netflix
+        country:
+          $ref: '#/components/schemas/Country'
+        officialSite:
+          type:
+          - string
+          - 'null'
+          format: uri
+    Country:
+      type:
+      - object
+      - 'null'
+      properties:
+        name:
+          type: string
+          example: United States
+        code:
+          type: string
+          example: US
+        timezone:
+          type: string
+          example: America/New_York
+    Schedule:
+      type: object
+      properties:
+        time:
+          type: string
+          description: Air time in HH:MM format.
+          example: '22:00'
+        days:
+          type: array
+          items:
+            type: string
+            enum:
+            - Monday
+            - Tuesday
+            - Wednesday
+            - Thursday
+            - Friday
+            - Saturday
+            - Sunday
+          example:
+          - Sunday
+    Rating:
+      type: object
+      properties:
+        average:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Average user rating (0–10).
+          example: 8.4
+    Externals:
+      type: object
+      description: External IDs for the resource.
+      properties:
+        tvrage:
+          type:
+          - integer
+          - 'null'
+        thetvdb:
+          type:
+          - integer
+          - 'null'
+        imdb:
+          type:
+          - string
+          - 'null'
+          example: tt0944947
+    Links:
+      type: object
+      description: HAL links to related resources.
+      additionalProperties:
+        oneOf:
+        - $ref: '#/components/schemas/HalLink'
+        - type: array
+          items:
+            $ref: '#/components/schemas/HalLink'
+    HalLink:
+      type: object
+      properties:
+        href:
+          type: string
+          format: uri
+        name:
+          type: string
+      required:
+      - href
+    Show:
+      type: object
+      description: Full show resource.
+      properties:
+        id:
+          type: integer
+          example: 1
+        url:
+          type: string
+          format: uri
+          example: https://www.tvmaze.com/shows/1/under-the-dome
+        name:
+          type: string
+          example: Under the Dome
+        type:
+          type: string
+          example: Scripted
+        language:
+          type:
+          - string
+          - 'null'
+          example: English
+        genres:
+          type: array
+          items:
+            type: string
+          example:
+          - Drama
+          - Science-Fiction
+          - Thriller
+        status:
+          type: string
+          enum:
+          - Running
+          - Ended
+          - To Be Determined
+          - In Development
+          example: Ended
+        runtime:
+          type:
+          - integer
+          - 'null'
+          example: 60
+        averageRuntime:
+          type:
+          - integer
+          - 'null'
+          example: 60
+        premiered:
+          type:
+          - string
+          - 'null'
+          format: date
+          example: '2013-06-24'
+        ended:
+          type:
+          - string
+          - 'null'
+          format: date
+        officialSite:
+          type:
+          - string
+          - 'null'
+          format: uri
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+        rating:
+          $ref: '#/components/schemas/Rating'
+        weight:
+          type: integer
+        network:
+          $ref: '#/components/schemas/Network'
+        webChannel:
+          $ref: '#/components/schemas/WebChannel'
+        dvdCountry:
+          $ref: '#/components/schemas/Country'
+        externals:
+          $ref: '#/components/schemas/Externals'
+        image:
+          $ref: '#/components/schemas/ImageSet'
+        summary:
+          type:
+          - string
+          - 'null'
+          description: HTML-formatted summary.
+        updated:
+          type: integer
+          description: Unix timestamp of last update.
+        _links:
+          $ref: '#/components/schemas/Links'
+        _embedded:
+          type: object
+          description: Embedded sub-resources, present only when using the embed parameter.
+    ShowSearchResult:
+      type: object
+      description: A single show search result with a relevancy score.
+      properties:
+        score:
+          type: number
+          format: float
+          description: Relevancy score.
+          example: 17.489948
+        show:
+          $ref: '#/components/schemas/Show'
+      required:
+      - score
+      - show
+    Episode:
+      type: object
+      description: Full episode resource.
+      properties:
+        id:
+          type: integer
+          example: 1
+        url:
+          type: string
+          format: uri
+        name:
+          type: string
+          example: Pilot
+        season:
+          type: integer
+          example: 1
+        number:
+          type:
+          - integer
+          - 'null'
+          example: 1
+        type:
+          type: string
+          enum:
+          - regular
+          - significant_special
+          - insignificant_special
+          example: regular
+        airdate:
+          type:
+          - string
+          - 'null'
+          format: date
+          example: '2013-06-24'
+        airtime:
+          type: string
+          example: '22:00'
+        airstamp:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          example: '2013-06-25T02:00:00+00:00'
+        runtime:
+          type:
+          - integer
+          - 'null'
+          example: 60
+        rating:
+          $ref: '#/components/schemas/Rating'
+        image:
+          $ref: '#/components/schemas/ImageSet'
+        summary:
+          type:
+          - string
+          - 'null'
+          description: HTML-formatted summary.
+        _links:
+          $ref: '#/components/schemas/Links'
+        _embedded:
+          type: object
+          description: Embedded sub-resources.
+    ScheduleEpisode:
+      allOf:
+      - $ref: '#/components/schemas/Episode'
+      - type: object
+        properties:
+          show:
+            $ref: '#/components/schemas/Show'
+    Season:
+      type: object
+      description: Full season resource.
+      properties:
+        id:
+          type: integer
+          example: 1
+        url:
+          type: string
+          format: uri
+        number:
+          type: integer
+          example: 1
+        name:
+          type: string
+        episodeOrder:
+          type:
+          - integer
+          - 'null'
+        premiereDate:
+          type:
+          - string
+          - 'null'
+          format: date
+        endDate:
+          type:
+          - string
+          - 'null'
+          format: date
+        network:
+          $ref: '#/components/schemas/Network'
+        webChannel:
+          $ref: '#/components/schemas/WebChannel'
+        image:
+          $ref: '#/components/schemas/ImageSet'
+        summary:
+          type:
+          - string
+          - 'null'
+        _links:
+          $ref: '#/components/schemas/Links'
+    Person:
+      type: object
+      description: Full person resource.
+      properties:
+        id:
+          type: integer
+          example: 1
+        url:
+          type: string
+          format: uri
+        name:
+          type: string
+          example: Mike Vogel
+        country:
+          $ref: '#/components/schemas/Country'
+        birthday:
+          type:
+          - string
+          - 'null'
+          format: date
+        deathday:
+          type:
+          - string
+          - 'null'
+          format: date
+        gender:
+          type:
+          - string
+          - 'null'
+          enum:
+          - Male
+          - Female
+          - Other
+          - null
+        image:
+          $ref: '#/components/schemas/ImageSet'
+        updated:
+          type: integer
+          description: Unix timestamp of last update.
+        _links:
+          $ref: '#/components/schemas/Links'
+        _embedded:
+          type: object
+    PersonSearchResult:
+      type: object
+      description: A single person search result with a relevancy score.
+      properties:
+        score:
+          type: number
+          format: float
+          example: 10.253044
+        person:
+          $ref: '#/components/schemas/Person'
+      required:
+      - score
+      - person
+    Character:
+      type: object
+      description: A fictional character portrayed in a show.
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          format: uri
+        name:
+          type: string
+          example: Dale Barbara
+        image:
+          $ref: '#/components/schemas/ImageSet'
+        self:
+          type: boolean
+          description: Whether the person appears as themselves.
+        voice:
+          type: boolean
+          description: Whether this is a voice-only role.
+        _links:
+          $ref: '#/components/schemas/Links'
+    CastMember:
+      type: object
+      description: 'A cast item: a person paired with a character they portray.'
+      properties:
+        person:
+          $ref: '#/components/schemas/Person'
+        character:
+          $ref: '#/components/schemas/Character'
+        self:
+          type: boolean
+        voice:
+          type: boolean
+    CrewMember:
+      type: object
+      description: 'A crew item: a person paired with their crew role.'
+      properties:
+        type:
+          type: string
+          description: The crew role.
+          example: Creator
+        person:
+          $ref: '#/components/schemas/Person'
+    CastCredit:
+      type: object
+      description: A show-level cast credit for a person.
+      properties:
+        self:
+          type: boolean
+        voice:
+          type: boolean
+        _links:
+          type: object
+          properties:
+            show:
+              $ref: '#/components/schemas/HalLink'
+            character:
+              $ref: '#/components/schemas/HalLink'
+        _embedded:
+          type: object
+          description: Embedded show and/or character when embed parameter is used.
+    CrewCredit:
+      type: object
+      description: A show-level crew credit for a person.
+      properties:
+        type:
+          type: string
+          description: The crew role.
+          example: Creator
+        _links:
+          type: object
+          properties:
+            show:
+              $ref: '#/components/schemas/HalLink'
+        _embedded:
+          type: object
+          description: Embedded show when embed parameter is used.
+    GuestCastCredit:
+      type: object
+      description: An episode-level guest cast credit for a person.
+      properties:
+        self:
+          type: boolean
+        voice:
+          type: boolean
+        _links:
+          type: object
+          properties:
+            episode:
+              $ref: '#/components/schemas/HalLink'
+            character:
+              $ref: '#/components/schemas/HalLink'
+        _embedded:
+          type: object
+          description: Embedded episode and/or character when embed parameter is used.
+    AKA:
+      type: object
+      description: An alternative name (alias) for a show.
+      properties:
+        name:
+          type: string
+          description: The alias name.
+        country:
+          $ref: '#/components/schemas/Country'
+    AlternateList:
+      type: object
+      description: An alternate episode ordering list (e.g. DVD order).
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          format: uri
+        dvdRelease:
+          type: boolean
+          description: Whether this is a DVD release ordering.
+        verboseType:
+          type:
+          - string
+          - 'null'
+        language:
+          type:
+          - string
+          - 'null'
+        network:
+          $ref: '#/components/schemas/Network'
+        webChannel:
+          $ref: '#/components/schemas/WebChannel'
+        _links:
+          $ref: '#/components/schemas/Links'
+        _embedded:
+          type: object
+    AlternateEpisode:
+      type: object
+      description: An episode entry within an alternate list.
+      properties:
+        id:
+          type: integer
+        season:
+          type:
+          - integer
+          - 'null'
+        number:
+          type:
+          - integer
+          - 'null'
+        _links:
+          $ref: '#/components/schemas/Links'
+        _embedded:
+          type: object
