@@ -1,0 +1,515 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Jobrise Public Jobs API",
+    "version": "1.0.0",
+    "description": "Public Jobs API for Jobrise (Rise).\n\nTerms of Service: Please link back (with follow, and without nofollow) to the URL on Rise and mention Rise as a source. If you do not, API access may be suspended.",
+    "termsOfService": "https://docs.joinrise.co/"
+  },
+  "servers": [
+    {
+      "url": "https://api.joinrise.io",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/api/v1/jobs/public": {
+      "get": {
+        "operationId": "getPublicJobs",
+        "summary": "Get public jobs",
+        "description": "Retrieve a paginated list of public jobs with optional filters and sorting.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (1-based).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of jobs to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "example": 20
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort order for the results.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "asc"
+            },
+            "example": "desc"
+          },
+          {
+            "name": "sortedBy",
+            "in": "query",
+            "description": "Field to sort by (e.g., createdAt).",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "createdAt"
+            },
+            "example": "createdAt"
+          },
+          {
+            "name": "jobLoc",
+            "in": "query",
+            "description": "Job location filter. Can be a free-form location string or \"lat,lng\" coordinates.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "37.4847955,-122.228141"
+          },
+          {
+            "name": "includeDescription",
+            "in": "query",
+            "description": "Whether to include full job description and breakdown fields.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "example": true
+          },
+          {
+            "name": "isTrending",
+            "in": "query",
+            "description": "Filter for trending jobs only.",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "example": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with a list of public jobs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobListResponse"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "Example job list response",
+                    "value": {
+                      "success": true,
+                      "legal": "API Terms of Service: Please link back (with follow, and without nofollow!) to the URL on Rise and mention Rise as a source, so we get traffic back from your site. If you do not we'll have to suspend API access.",
+                      "result": {
+                        "count": 10000,
+                        "jobs": [
+                          {
+                            "owner": {
+                              "benefits": {
+                                "title": "",
+                                "benefits": [
+                                  "Dental Insurance",
+                                  "Health Savings Account (HSA)",
+                                  "Vision Insurance",
+                                  "Performance Bonus",
+                                  "Paid Holidays",
+                                  "Sabbatical",
+                                  "Medical Insurance",
+                                  "401K Matching",
+                                  "Paid Time-Off",
+                                  "Learning & Development",
+                                  "Maternity Leave",
+                                  "Paternity Leave",
+                                  "Mental Health Resources"
+                                ]
+                              },
+                              "funding": "Other",
+                              "companyName": "GoFundMe",
+                              "values": {
+                                "title": "",
+                                "values": [
+                                  "Inclusive & Diverse",
+                                  "Diversity of Opinions",
+                                  "Collaboration over Competition",
+                                  "Growth & Learning",
+                                  "Transparent & Candid",
+                                  "Mission Driven",
+                                  "Social Impact Driven",
+                                  "Passion for Exploration"
+                                ]
+                              },
+                              "rating": "4.4",
+                              "evaluatedSize": "enterprise",
+                              "photo": "https://media-rise-prod.s3.us-east-2.amazonaws.com/employers/62f648f1109e2b7bcbba4d66/photo.png",
+                              "locationAddress": "Redwood City, CA, USA",
+                              "badges": [
+                                "Changemaker",
+                                "Family Friendly",
+                                "Global Citizen",
+                                "Work&Life Balance"
+                              ],
+                              "teamSize": 500,
+                              "_id": "62f648f1109e2b7bcbba4d66",
+                              "locationCoordinates": {
+                                "lon": -122.228141,
+                                "lat": 37.4847955
+                              },
+                              "isClaimed": false,
+                              "sector": "Internet & Web Services",
+                              "slug": "gofundme"
+                            },
+                            "locationAddress": "Anywhere",
+                            "title": "Renewals & Sales Support Specialist (Remote)",
+                            "type": "Remote",
+                            "url": "https://app.joinrise.co/jobs/gofundme-renewals-sales-support-specialist-remote-t23d",
+                            "createdAt": "2025-07-03T17:30:54.528Z",
+                            "locationCoordinates": null,
+                            "department": "Sales & Business Development",
+                            "seniority": "Entry Level",
+                            "updatedAt": "2025-07-03T17:31:42.628Z",
+                            "_id": "6866be4eddcc7a8b9c7c313d"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid query parameters).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error": "Invalid 'page' parameter. Must be a positive integer."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error": "Unexpected server error."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JobListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates whether the request was successful."
+          },
+          "legal": {
+            "type": "string",
+            "description": "Legal notice and terms of service text."
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "description": "Total number of jobs matching the query."
+              },
+              "jobs": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "required": ["count", "jobs"]
+          }
+        },
+        "required": ["success", "legal", "result"]
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "$ref": "#/components/schemas/Owner"
+          },
+          "locationAddress": {
+            "type": "string",
+            "description": "Human-readable job location."
+          },
+          "title": {
+            "type": "string",
+            "description": "Job title."
+          },
+          "type": {
+            "type": "string",
+            "description": "Work type (e.g., Remote, On-Site, Hybrid)."
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the job detail page on Rise."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Job creation timestamp."
+          },
+          "locationCoordinates": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocationCoordinates"
+              }
+            ],
+            "nullable": true
+          },
+          "department": {
+            "type": "string",
+            "description": "Department or functional area."
+          },
+          "seniority": {
+            "type": "string",
+            "description": "Seniority level (e.g., Entry Level, Mid-Level, Senior Level)."
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp."
+          },
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier of the job."
+          },
+          "skills_suggest": {
+            "type": "array",
+            "description": "Suggested skills extracted from the job description.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "descriptionBreakdown": {
+            "$ref": "#/components/schemas/DescriptionBreakdown"
+          },
+          "featuredCategory": {
+            "type": "string",
+            "description": "Featured category label, if any."
+          }
+        },
+        "required": ["owner", "locationAddress", "title", "type", "url", "createdAt", "_id"]
+      },
+      "Owner": {
+        "type": "object",
+        "properties": {
+          "benefits": {
+            "$ref": "#/components/schemas/Benefits"
+          },
+          "funding": {
+            "type": "string",
+            "description": "Funding stage (e.g., Public, Beyond Series C, Growth, Private, Other)."
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Company name."
+          },
+          "values": {
+            "$ref": "#/components/schemas/Values"
+          },
+          "rating": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "description": "Company rating (string or numeric)."
+          },
+          "evaluatedSize": {
+            "type": "string",
+            "nullable": true,
+            "description": "Evaluated company size (e.g., enterprise)."
+          },
+          "photo": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to company logo or photo."
+          },
+          "locationAddress": {
+            "type": "string",
+            "description": "Company headquarters location."
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of company badges or culture tags."
+          },
+          "teamSize": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Approximate team size."
+          },
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier of the company/owner."
+          },
+          "locationCoordinates": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocationCoordinates"
+              }
+            ],
+            "nullable": true
+          },
+          "isClaimed": {
+            "type": "boolean",
+            "description": "Whether the company profile is claimed."
+          },
+          "sector": {
+            "type": "string",
+            "nullable": true,
+            "description": "Industry sector."
+          },
+          "slug": {
+            "type": "string",
+            "description": "Company slug used in URLs."
+          }
+        },
+        "required": ["companyName", "_id"]
+      },
+      "Benefits": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Optional title for the benefits section."
+          },
+          "benefits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of benefits offered."
+          }
+        }
+      },
+      "Values": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Optional title for the values section."
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of company values."
+          }
+        }
+      },
+      "LocationCoordinates": {
+        "type": "object",
+        "properties": {
+          "lon": {
+            "type": "number",
+            "format": "double",
+            "description": "Longitude."
+          },
+          "lat": {
+            "type": "number",
+            "format": "double",
+            "description": "Latitude."
+          }
+        },
+        "required": ["lon", "lat"]
+      },
+      "DescriptionBreakdown": {
+        "type": "object",
+        "description": "Structured breakdown of the job description, when available.",
+        "properties": {
+          "oneSentenceJobSummary": {
+            "type": "string",
+            "description": "Single-sentence summary of the job."
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Keywords extracted from the job description."
+          },
+          "employmentType": {
+            "type": "string",
+            "description": "Employment type (e.g., Full-time, Part-time)."
+          },
+          "workModel": {
+            "type": "string",
+            "description": "Work model (e.g., Remote, Onsite, Hybrid)."
+          },
+          "salaryRangeMinYearly": {
+            "type": "number",
+            "format": "double",
+            "description": "Minimum yearly salary (if available)."
+          },
+          "salaryRangeMaxYearly": {
+            "type": "number",
+            "format": "double",
+            "description": "Maximum yearly salary (if available)."
+          },
+          "skillRequirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of skill requirements."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates whether the request was successful."
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message describing the failure."
+          }
+        },
+        "required": ["success", "error"]
+      }
+    }
+  }
+}

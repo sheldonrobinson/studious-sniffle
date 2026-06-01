@@ -1,0 +1,360 @@
+openapi: 3.0.3
+info:
+  title: Jobrise Public Jobs API
+  version: "1.0.0"
+  description: |
+    Public Jobs API for Jobrise (Rise).
+
+    Terms of Service:
+    Please link back (with follow, and without nofollow) to the URL on Rise and mention Rise as a source.
+    If you do not, API access may be suspended.
+  termsOfService: https://docs.joinrise.co/
+
+servers:
+  - url: https://api.joinrise.io
+    description: Production server
+
+paths:
+  /api/v1/jobs/public:
+    get:
+      operationId: getPublicJobs
+      summary: Get public jobs
+      description: Retrieve a paginated list of public jobs with optional filters and sorting.
+      parameters:
+        - name: page
+          in: query
+          description: Page number (1-based).
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+
+        - name: limit
+          in: query
+          description: Maximum number of jobs to return per page.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          example: 20
+
+        - name: sort
+          in: query
+          description: Sort order for the results.
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          example: desc
+
+        - name: sortedBy
+          in: query
+          description: Field to sort by.
+          required: false
+          schema:
+            type: string
+            default: createdAt
+          example: createdAt
+
+        - name: jobLoc
+          in: query
+          description: Job location filter. Can be a free-form location string or "lat,lng".
+          required: false
+          schema:
+            type: string
+          example: "37.4847955,-122.228141"
+
+        - name: includeDescription
+          in: query
+          description: Whether to include full job description and breakdown fields.
+          required: false
+          schema:
+            type: boolean
+            default: true
+          example: true
+
+        - name: isTrending
+          in: query
+          description: Filter for trending jobs only.
+          required: false
+          schema:
+            type: boolean
+          example: true
+
+      responses:
+        "200":
+          description: Successful response with a list of public jobs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobListResponse"
+              examples:
+                default:
+                  summary: Example job list response
+                  value:
+                    success: true
+                    legal: >
+                      API Terms of Service: Please link back (with follow, and without nofollow!) to the URL on Rise and mention Rise as a source.
+                    result:
+                      count: 10000
+                      jobs:
+                        - _id: "6866be4eddcc7a8b9c7c313d"
+                          title: "Renewals & Sales Support Specialist (Remote)"
+                          type: "Remote"
+                          url: "https://app.joinrise.co/jobs/gofundme-renewals-sales-support-specialist-remote-t23d"
+                          locationAddress: "Anywhere"
+                          createdAt: "2025-07-03T17:30:54.528Z"
+                          updatedAt: "2025-07-03T17:31:42.628Z"
+                          department: "Sales & Business Development"
+                          seniority: "Entry Level"
+                          locationCoordinates: null
+                          owner:
+                            _id: "62f648f1109e2b7bcbba4d66"
+                            companyName: "GoFundMe"
+                            funding: "Other"
+                            rating: "4.4"
+                            evaluatedSize: "enterprise"
+                            locationAddress: "Redwood City, CA, USA"
+                            teamSize: 500
+                            isClaimed: false
+                            sector: "Internet & Web Services"
+                            slug: "gofundme"
+                            photo: "https://media-rise-prod.s3.us-east-2.amazonaws.com/employers/62f648f1109e2b7bcbba4d66/photo.png"
+                            locationCoordinates:
+                              lon: -122.228141
+                              lat: 37.4847955
+                            badges:
+                              - Changemaker
+                              - Family Friendly
+                              - Global Citizen
+                              - Work&Life Balance
+                            benefits:
+                              title: ""
+                              benefits:
+                                - Dental Insurance
+                                - Health Savings Account (HSA)
+                                - Vision Insurance
+                                - Performance Bonus
+                                - Paid Holidays
+                                - Sabbatical
+                                - Medical Insurance
+                                - 401K Matching
+                                - Paid Time-Off
+                                - Learning & Development
+                                - Maternity Leave
+                                - Paternity Leave
+                                - Mental Health Resources
+                            values:
+                              title: ""
+                              values:
+                                - Inclusive & Diverse
+                                - Diversity of Opinions
+                                - Collaboration over Competition
+                                - Growth & Learning
+                                - Transparent & Candid
+                                - Mission Driven
+                                - Social Impact Driven
+                                - Passion for Exploration
+
+        "400":
+          description: Bad request (invalid query parameters).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error: "Invalid 'page' parameter. Must be a positive integer."
+
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error: "Unexpected server error."
+
+components:
+  schemas:
+
+    JobListResponse:
+      type: object
+      required: [success, legal, result]
+      properties:
+        success:
+          type: boolean
+        legal:
+          type: string
+        result:
+          type: object
+          required: [count, jobs]
+          properties:
+            count:
+              type: integer
+            jobs:
+              type: array
+              items:
+                $ref: "#/components/schemas/Job"
+
+    Job:
+      type: object
+      required:
+        - _id
+        - title
+        - type
+        - url
+        - createdAt
+        - locationAddress
+        - owner
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        url:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        locationAddress:
+          type: string
+        locationCoordinates:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/LocationCoordinates"
+        department:
+          type: string
+        seniority:
+          type: string
+        skills_suggest:
+          type: array
+          items:
+            type: string
+        featuredCategory:
+          type: string
+        descriptionBreakdown:
+          $ref: "#/components/schemas/DescriptionBreakdown"
+        owner:
+          $ref: "#/components/schemas/Owner"
+
+    Owner:
+      type: object
+      required: [companyName, _id]
+      properties:
+        _id:
+          type: string
+        companyName:
+          type: string
+        funding:
+          type: string
+        rating:
+          oneOf:
+            - type: string
+            - type: number
+        evaluatedSize:
+          type: string
+          nullable: true
+        photo:
+          type: string
+          format: uri
+        locationAddress:
+          type: string
+        badges:
+          type: array
+          items:
+            type: string
+        teamSize:
+          type: integer
+          nullable: true
+        locationCoordinates:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/LocationCoordinates"
+        isClaimed:
+          type: boolean
+        sector:
+          type: string
+          nullable: true
+        slug:
+          type: string
+        benefits:
+          $ref: "#/components/schemas/Benefits"
+        values:
+          $ref: "#/components/schemas/Values"
+
+    Benefits:
+      type: object
+      properties:
+        title:
+          type: string
+        benefits:
+          type: array
+          items:
+            type: string
+
+    Values:
+      type: object
+      properties:
+        title:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
+
+    LocationCoordinates:
+      type: object
+      required: [lon, lat]
+      properties:
+        lon:
+          type: number
+          format: double
+        lat:
+          type: number
+          format: double
+
+    DescriptionBreakdown:
+      type: object
+      properties:
+        oneSentenceJobSummary:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        employmentType:
+          type: string
+        workModel:
+          type: string
+        salaryRangeMinYearly:
+          type: number
+          format: double
+        salaryRangeMaxYearly:
+          type: number
+          format: double
+        skillRequirements:
+          type: array
+          items:
+            type: string
+
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string

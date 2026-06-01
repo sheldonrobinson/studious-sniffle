@@ -1,0 +1,383 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Jobicy Public Jobs API & RSS",
+    "version": "1.0.0",
+    "description": "OpenAPI 3.0 specification for Jobicy public remote jobs JSON API and RSS feed.\n\nThis specification is based on the public documentation at https://jobicy.com/jobs-rss-feed.\n\n**Fair use & restrictions (summary):**\n- Do not redistribute listings to external job platforms (e.g., Jooble, Google Jobs, LinkedIn).\n- Job postings are published with ~6-hour delay to preserve Jobicy as original source.\n- Polling more than once per hour may result in restricted access.\n- Accessing the feed a few times per day is sufficient.\n- Excessive querying or content manipulation may lead to access restrictions."
+  },
+  "servers": [
+    {
+      "url": "https://jobicy.com",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/api/v2/remote-jobs": {
+      "get": {
+        "operationId": "getRemoteJobs",
+        "summary": "Get latest remote jobs (JSON)",
+        "description": "Returns the latest remote job listings in JSON format.\n\nThis endpoint provides access to remote job listings across industries and regions, suitable for integration into applications, websites, or research projects.",
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "description": "Number of listings to return.\n\nDefault: 100\nRange: 1–100",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100
+            },
+            "example": 20
+          },
+          {
+            "name": "geo",
+            "in": "query",
+            "description": "Filter by job region.\n\nIf omitted, jobs from all regions are returned.\nExamples: `usa`, `canada`, `emea`, `latam`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "usa"
+          },
+          {
+            "name": "industry",
+            "in": "query",
+            "description": "Filter by job category/industry.\n\nIf omitted, jobs from all categories are returned.\nExamples: `marketing`, `copywriting`, `supporting`, `dev`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "marketing"
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Search term applied to job title and description.\n\nIf omitted, all jobs are returned.\nExamples: `python`, `seo`, `designer`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "python"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of remote job listings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Job"
+                  }
+                },
+                "examples": {
+                  "default": {
+                    "summary": "Example response with two jobs",
+                    "value": [
+                      {
+                        "id": 12345,
+                        "url": "https://jobicy.com/jobs/12345-remote-senior-python-developer",
+                        "jobTitle": "Senior Python Developer",
+                        "companyName": "Acme Corp",
+                        "companyLogo": "https://jobicy.com/wp-content/uploads/company-logos/acme.png",
+                        "jobIndustry": "dev",
+                        "jobType": "full-time",
+                        "jobGeo": "usa",
+                        "jobLevel": "Senior",
+                        "jobExcerpt": "Build and maintain scalable backend services...",
+                        "jobDescription": "<p>We are looking for a <strong>Senior Python Developer</strong> to join our fully remote team...</p>",
+                        "pubDate": "2025-05-30T14:32:00+00:00",
+                        "salaryMin": 90000,
+                        "salaryMax": 130000,
+                        "salaryCurrency": "USD",
+                        "salaryPeriod": "yearly"
+                      },
+                      {
+                        "id": 67890,
+                        "url": "https://jobicy.com/jobs/67890-remote-customer-support-specialist",
+                        "jobTitle": "Customer Support Specialist",
+                        "companyName": "Globex",
+                        "companyLogo": "https://jobicy.com/wp-content/uploads/company-logos/globex.png",
+                        "jobIndustry": "supporting",
+                        "jobType": "contract",
+                        "jobGeo": "canada",
+                        "jobLevel": "Any",
+                        "jobExcerpt": "Support customers via chat and email...",
+                        "jobDescription": "<p>Join our remote-first support team and help customers succeed...</p>",
+                        "pubDate": "2025-05-30T10:05:00+00:00",
+                        "salaryMin": 20,
+                        "salaryMax": 30,
+                        "salaryCurrency": "CAD",
+                        "salaryPeriod": "hourly"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters (e.g., count out of range).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Invalid 'count' parameter. Must be between 1 and 100."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests (rate limiting / excessive querying).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Too many requests. Please limit feed checks to no more than once per hour."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Unexpected server error."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feed/job_feed": {
+      "get": {
+        "operationId": "getJobFeedRss",
+        "summary": "Get remote jobs RSS feed (XML)",
+        "description": "Returns an RSS feed of remote job listings in XML format.\n\nThis endpoint is suitable for RSS readers, feed-based integrations, and systems that consume XML job feeds.",
+        "parameters": [
+          {
+            "name": "job_categories",
+            "in": "query",
+            "description": "Filter by one or more job categories (comma-separated).\n\nExamples:\n- `business`\n- `copywriting`\n- `healthcare`\n- `education`\n- `legal`\n- `admin-support`\n- `supporting`\n- `data-science`\n- `design-multimedia`\n- `admin`\n- `accounting-finance`\n- `hr`\n- `marketing`\n- `management`\n- `dev`\n- `seller`\n- `seo`\n- `smm`\n- `engineering`\n- `technical-suppor`\n- `web-app-design`",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "supporting"
+          },
+          {
+            "name": "job_types",
+            "in": "query",
+            "description": "Filter by one or more job types (comma-separated).\n\nAllowed values:\n- `full-time`\n- `freelance`\n- `contract`\n- `part-time`",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "full-time"
+          },
+          {
+            "name": "search_keywords",
+            "in": "query",
+            "description": "Search term applied to job titles and descriptions.\n\nExample: `designer`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "designer"
+          },
+          {
+            "name": "search_region",
+            "in": "query",
+            "description": "Filter by region.\n\nExamples include (non-exhaustive):\n- `apac`, `emea`, `latam`\n- `argentina`, `australia`, `austria`, `belgium`, `brazil`, `bulgaria`, `canada`, `china`, `hong-kong`, `costa-rica`, `croatia`, `cyprus`, `czechia`, `denmark`, `estonia`, `europe`, `finland`, `france`, `germany`, `greece`, `hungary`, `ireland`, `israel`, `italy`, `japan`, `latvia`, `lithuania`, `mexico`, `netherlands`, `new-zealand`, `norway`, `philippines`, `poland`, `portugal`, `romania`, `serbia`, `singapore`, `slovakia`, `slovenia`, `south-korea`, `spain`, `sweden`, `switzerland`, `thailand`, `turkiye`, `united-arab-emirates`, `uk`, `ukraine`, `usa`, `vietnam`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "usa"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RSS feed of remote job listings.",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string",
+                  "description": "RSS 2.0 XML document."
+                },
+                "example": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<rss version=\"2.0\">\n  <channel>\n    <title>Jobicy – Remote Jobs</title>\n    <link>https://jobicy.com/feed/job_feed?job_categories=supporting&amp;job_types=full-time&amp;search_region=usa</link>\n    <description>Full-time Customer Service jobs in the U.S. region.</description>\n    <item>\n      <title>Customer Support Specialist</title>\n      <link>https://jobicy.com/jobs/67890-remote-customer-support-specialist</link>\n      <description><![CDATA[Join our remote-first support team and help customers succeed...]]></description>\n      <pubDate>Fri, 30 May 2025 10:05:00 +0000</pubDate>\n      <guid isPermaLink=\"false\">67890</guid>\n    </item>\n  </channel>\n</rss>"
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "string",
+                  "description": "RSS 2.0 XML document."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Invalid parameter value."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests (rate limiting / excessive querying).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Too many requests. Please limit feed checks to no more than once per hour."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Unexpected server error."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "description": "Remote job listing.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique Job ID."
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Job link."
+          },
+          "jobTitle": {
+            "type": "string",
+            "description": "Job title."
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Company name."
+          },
+          "companyLogo": {
+            "type": "string",
+            "format": "uri",
+            "description": "Company logo URL."
+          },
+          "jobIndustry": {
+            "type": "string",
+            "description": "Job function / industry (e.g., marketing, dev, supporting)."
+          },
+          "jobType": {
+            "type": "string",
+            "description": "Job type (full-time, contract, part-time, internship).",
+            "example": "full-time"
+          },
+          "jobGeo": {
+            "type": "string",
+            "description": "Geographic restriction for employment (e.g., usa, canada, emea, Anywhere)."
+          },
+          "jobLevel": {
+            "type": "string",
+            "description": "Seniority level (e.g., Junior, Mid, Senior, Any)."
+          },
+          "jobExcerpt": {
+            "type": "string",
+            "description": "Short excerpt of the job description (max ~55 characters)."
+          },
+          "jobDescription": {
+            "type": "string",
+            "description": "Full job description in HTML."
+          },
+          "pubDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Publication date and time (UTC+00:00)."
+          },
+          "salaryMin": {
+            "type": "number",
+            "nullable": true,
+            "description": "Minimum salary (if applicable)."
+          },
+          "salaryMax": {
+            "type": "number",
+            "nullable": true,
+            "description": "Maximum salary (if applicable)."
+          },
+          "salaryCurrency": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 4217 salary currency code (if applicable).",
+            "example": "USD"
+          },
+          "salaryPeriod": {
+            "type": "string",
+            "nullable": true,
+            "description": "Period for which the salary is paid (e.g., hourly, daily, monthly, yearly).",
+            "example": "yearly"
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "jobTitle",
+          "companyName",
+          "jobIndustry",
+          "jobType",
+          "jobGeo",
+          "jobLevel",
+          "jobExcerpt",
+          "jobDescription",
+          "pubDate"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error response.",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message."
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    }
+  }
+}
