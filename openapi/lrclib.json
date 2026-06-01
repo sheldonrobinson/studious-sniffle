@@ -1,0 +1,613 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "LRCLIB REST API",
+    "version": "1.0.0-beta",
+    "description": "LRCLIB public lyrics API. No authentication or rate limiting. Documentation based on https://lrclib.net/docs.",
+    "contact": {
+      "name": "LRCLIB",
+      "url": "https://lrclib.net"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://lrclib.net",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/api/get": {
+      "get": {
+        "operationId": "getLyricsBySignature",
+        "summary": "Get lyrics with a track's signature",
+        "description": "Attempt to find the best match of lyrics for the track using its signature. This endpoint may query external sources if the lyrics are not found in the internal database. For internal-only lookup, use `/api/get-cached`.",
+        "parameters": [
+          {
+            "name": "track_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Title of the track"
+          },
+          {
+            "name": "artist_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Name of the artist"
+          },
+          {
+            "name": "album_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Name of the album"
+          },
+          {
+            "name": "duration",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Track's duration in seconds. LRCLIB will attempt to provide the lyrics only when the duration matches the record in LRCLIB's database, or at least with a difference of ±2 seconds."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lyrics record found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LyricsRecord"
+                },
+                "examples": {
+                  "example": {
+                    "summary": "Successful lyrics lookup",
+                    "value": {
+                      "id": 3396226,
+                      "trackName": "I Want to Live",
+                      "artistName": "Borislav Slavov",
+                      "albumName": "Baldur's Gate 3 (Original Game Soundtrack)",
+                      "duration": 233,
+                      "instrumental": false,
+                      "plainLyrics": "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n",
+                      "syncedLyrics": "[00:17.12] I feel your breath upon my neck\n...[03:20.31] The clock won't stop and this is what we get\n[03:25.72] "
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Track not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "trackNotFound": {
+                    "summary": "Track not found",
+                    "value": {
+                      "code": 404,
+                      "name": "TrackNotFound",
+                      "message": "Failed to find specified track"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/get-cached": {
+      "get": {
+        "operationId": "getLyricsBySignatureCached",
+        "summary": "Get lyrics with a track's signature (cached only)",
+        "description": "Similar to `/api/get`, except that it will only look for lyrics from the internal database and will NOT attempt to access external sources.",
+        "parameters": [
+          {
+            "name": "track_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Title of the track"
+          },
+          {
+            "name": "artist_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Name of the artist"
+          },
+          {
+            "name": "album_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Name of the album"
+          },
+          {
+            "name": "duration",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            },
+            "description": "Track's duration in seconds"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lyrics record found (from cache/internal DB)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LyricsRecord"
+                },
+                "examples": {
+                  "example": {
+                    "summary": "Successful cached lyrics lookup",
+                    "value": {
+                      "id": 123456,
+                      "trackName": "Dragonborn",
+                      "artistName": "Jeremy Soule",
+                      "albumName": "The Elder Scrolls V: Skyrim: Original Game Soundtrack",
+                      "duration": 236,
+                      "instrumental": false,
+                      "plainLyrics": "Dovahkiin, Dovahkiin...\n",
+                      "syncedLyrics": "[00:00.00] Dovahkiin, Dovahkiin...\n"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Track not found in internal database",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "trackNotFound": {
+                    "summary": "Track not found",
+                    "value": {
+                      "code": 404,
+                      "name": "TrackNotFound",
+                      "message": "Failed to find specified track"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/get/{id}": {
+      "get": {
+        "operationId": "getLyricsById",
+        "summary": "Get lyrics by LRCLIB ID",
+        "description": "Get a lyrics record by an absolute LRCLIB ID. IDs can be retrieved from other APIs such as `/api/search`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "ID of the lyrics record"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lyrics record found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LyricsRecord"
+                },
+                "examples": {
+                  "example": {
+                    "summary": "Successful lookup by ID",
+                    "value": {
+                      "id": 3396226,
+                      "trackName": "I Want to Live",
+                      "artistName": "Borislav Slavov",
+                      "albumName": "Baldur's Gate 3 (Original Game Soundtrack)",
+                      "duration": 233,
+                      "instrumental": false,
+                      "plainLyrics": "I feel your breath upon my neck\n...The clock won't stop and this is what we get\n",
+                      "syncedLyrics": "[00:17.12] I feel your breath upon my neck\n...[03:20.31] The clock won't stop and this is what we get\n[03:25.72] "
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lyrics record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "trackNotFound": {
+                    "summary": "Record not found",
+                    "value": {
+                      "code": 404,
+                      "name": "TrackNotFound",
+                      "message": "Failed to find specified track"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "operationId": "searchLyrics",
+        "summary": "Search for lyrics records",
+        "description": "Search for lyrics records using keywords. Returns an array of lyrics records that match the specified search conditions. At least ONE of `q` OR `track_name` must be present. Currently returns a maximum of 20 results and does not support pagination.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search for keyword present in ANY fields (track title, artist name, or album name). At least one of `q` or `track_name` must be provided."
+          },
+          {
+            "name": "track_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search for keyword in track's title. At least one of `q` or `track_name` must be provided."
+          },
+          {
+            "name": "artist_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search for keyword in track's artist name"
+          },
+          {
+            "name": "album_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search for keyword in track's album name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of matching lyrics records (max 20)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LyricsRecord"
+                  }
+                },
+                "examples": {
+                  "searchByQ": {
+                    "summary": "Search using q parameter",
+                    "value": [
+                      {
+                        "id": 1111,
+                        "trackName": "Still Alive",
+                        "artistName": "GLaDOS",
+                        "albumName": "Portal OST",
+                        "duration": 180,
+                        "instrumental": false,
+                        "plainLyrics": "This was a triumph...\n",
+                        "syncedLyrics": "[00:00.00] This was a triumph...\n"
+                      }
+                    ]
+                  },
+                  "searchByTrackAndArtist": {
+                    "summary": "Search using multiple fields",
+                    "value": [
+                      {
+                        "id": 2222,
+                        "trackName": "22",
+                        "artistName": "Taylor Swift",
+                        "albumName": "Red",
+                        "duration": 230,
+                        "instrumental": false,
+                        "plainLyrics": "It feels like a perfect night...\n",
+                        "syncedLyrics": "[00:00.00] It feels like a perfect night...\n"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid search parameters (e.g., missing both q and track_name)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/publish": {
+      "post": {
+        "operationId": "publishLyrics",
+        "summary": "Publish a new lyrics record",
+        "description": "Experimental. Publish new lyrics to the LRCLIB database. Can be called anonymously. If BOTH `plainLyrics` and `syncedLyrics` are left empty, the track will be marked as instrumental. All previous revisions of the lyrics are kept when publishing lyrics for a track that already has existing lyrics.\n\nEvery request must include a fresh, valid Publish Token in the `X-Publish-Token` header. Each token can only be used once.",
+        "parameters": [
+          {
+            "name": "X-Publish-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Publish Token in the form `{prefix}:{nonce}` obtained by solving a cryptographic challenge from `/api/request-challenge`."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              },
+              "examples": {
+                "publishWithLyrics": {
+                  "summary": "Publish track with plain and synced lyrics",
+                  "value": {
+                    "trackName": "Custom Song",
+                    "artistName": "Indie Artist",
+                    "albumName": "Indie Album",
+                    "duration": 210,
+                    "plainLyrics": "First line of the song\nSecond line of the song\n",
+                    "syncedLyrics": "[00:00.00] First line of the song\n[00:10.00] Second line of the song\n"
+                  }
+                },
+                "publishInstrumental": {
+                  "summary": "Publish instrumental track (no lyrics)",
+                  "value": {
+                    "trackName": "Instrumental Track",
+                    "artistName": "Composer",
+                    "albumName": "Instrumental Album",
+                    "duration": 180,
+                    "plainLyrics": "",
+                    "syncedLyrics": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Lyrics successfully published"
+          },
+          "400": {
+            "description": "Incorrect or invalid Publish Token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "incorrectToken": {
+                    "summary": "Incorrect publish token",
+                    "value": {
+                      "code": 400,
+                      "name": "IncorrectPublishTokenError",
+                      "message": "The provided publish token is incorrect"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/request-challenge": {
+      "post": {
+        "operationId": "requestPublishChallenge",
+        "summary": "Request a cryptographic challenge for publishing",
+        "description": "Experimental. Generate a pair of `prefix` and `target` strings for the cryptographic proof-of-work challenge. Each challenge expires after 5 minutes. The solution is a nonce, which can be used with the prefix to create a Publish Token for `/api/publish`.",
+        "responses": {
+          "200": {
+            "description": "Challenge generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeResponse"
+                },
+                "examples": {
+                  "example": {
+                    "summary": "Challenge example",
+                    "value": {
+                      "prefix": "VXMwW2qPfW2gkCNSl1i708NJkDghtAyU",
+                      "target": "000000FF00000000000000000000000000000000000000000000000000000000"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LyricsRecord": {
+        "type": "object",
+        "description": "A lyrics record stored in LRCLIB.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique ID of the lyrics record"
+          },
+          "trackName": {
+            "type": "string",
+            "description": "Title of the track"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "Name of the artist"
+          },
+          "albumName": {
+            "type": "string",
+            "description": "Name of the album"
+          },
+          "duration": {
+            "type": "number",
+            "format": "float",
+            "description": "Track's duration in seconds"
+          },
+          "instrumental": {
+            "type": "boolean",
+            "description": "Whether the track is instrumental (no lyrics)"
+          },
+          "plainLyrics": {
+            "type": "string",
+            "description": "Plain (unsynchronized) lyrics for the track",
+            "nullable": true
+          },
+          "syncedLyrics": {
+            "type": "string",
+            "description": "Synchronized lyrics in LRC-like format",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "trackName",
+          "artistName",
+          "albumName",
+          "duration",
+          "instrumental"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error response.",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "HTTP status code"
+          },
+          "name": {
+            "type": "string",
+            "description": "Error name identifier"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "message"
+        ]
+      },
+      "PublishRequest": {
+        "type": "object",
+        "description": "Request body for publishing lyrics. If both `plainLyrics` and `syncedLyrics` are empty, the track will be marked as instrumental.",
+        "properties": {
+          "trackName": {
+            "type": "string",
+            "description": "Title of the track"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "Track's artist name"
+          },
+          "albumName": {
+            "type": "string",
+            "description": "Track's album name"
+          },
+          "duration": {
+            "type": "number",
+            "format": "float",
+            "description": "Track's duration in seconds"
+          },
+          "plainLyrics": {
+            "type": "string",
+            "description": "Plain lyrics for the track. Can be empty to indicate instrumental when `syncedLyrics` is also empty."
+          },
+          "syncedLyrics": {
+            "type": "string",
+            "description": "Synchronized lyrics for the track. Can be empty to indicate instrumental when `plainLyrics` is also empty."
+          }
+        },
+        "required": [
+          "trackName",
+          "artistName",
+          "albumName",
+          "duration",
+          "plainLyrics",
+          "syncedLyrics"
+        ]
+      },
+      "ChallengeResponse": {
+        "type": "object",
+        "description": "Response containing the cryptographic challenge for publishing.",
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "description": "Prefix string used in the proof-of-work challenge"
+          },
+          "target": {
+            "type": "string",
+            "description": "Target string used in the proof-of-work challenge"
+          }
+        },
+        "required": [
+          "prefix",
+          "target"
+        ]
+      }
+    }
+  }
+}
