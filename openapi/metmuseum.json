@@ -686,7 +686,7 @@
         "properties": {
           "elementName": { "type": "string" },
           "elementDescription": {
-            "type": ["string", "null"]
+            "type": "string", "nullable": true
           },
           "elementMeasurements": {
             "type": "object",
