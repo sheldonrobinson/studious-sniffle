@@ -1,0 +1,835 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Open-Meteo Weather Forecast API",
+    "version": "1.0.0",
+    "description": "OpenAPI 3.0 specification for the Open-Meteo Weather Forecast REST API as documented at https://open-meteo.com/en/docs.\n\nCovers the `/v1/forecast` endpoint with all documented query parameters, response schemas, and examples."
+  },
+  "servers": [
+    {
+      "url": "https://api.open-meteo.com",
+      "description": "Public Weather Forecast API"
+    }
+  ],
+  "paths": {
+    "/v1/forecast": {
+      "get": {
+        "operationId": "getForecast",
+        "summary": "Get weather forecast",
+        "description": "Returns JSON weather forecast data (hourly, 15-minutely, daily, and current conditions) for up to 16 days for one or more locations.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/latitude"
+          },
+          {
+            "$ref": "#/components/parameters/longitude"
+          },
+          {
+            "$ref": "#/components/parameters/elevation"
+          },
+          {
+            "$ref": "#/components/parameters/hourly"
+          },
+          {
+            "$ref": "#/components/parameters/minutely_15"
+          },
+          {
+            "$ref": "#/components/parameters/daily"
+          },
+          {
+            "$ref": "#/components/parameters/current"
+          },
+          {
+            "$ref": "#/components/parameters/temperature_unit"
+          },
+          {
+            "$ref": "#/components/parameters/wind_speed_unit"
+          },
+          {
+            "$ref": "#/components/parameters/precipitation_unit"
+          },
+          {
+            "$ref": "#/components/parameters/timeformat"
+          },
+          {
+            "$ref": "#/components/parameters/timezone"
+          },
+          {
+            "$ref": "#/components/parameters/past_days"
+          },
+          {
+            "$ref": "#/components/parameters/forecast_days"
+          },
+          {
+            "$ref": "#/components/parameters/forecast_hours"
+          },
+          {
+            "$ref": "#/components/parameters/forecast_minutely_15"
+          },
+          {
+            "$ref": "#/components/parameters/past_hours"
+          },
+          {
+            "$ref": "#/components/parameters/past_minutely_15"
+          },
+          {
+            "$ref": "#/components/parameters/start_date"
+          },
+          {
+            "$ref": "#/components/parameters/end_date"
+          },
+          {
+            "$ref": "#/components/parameters/start_hour"
+          },
+          {
+            "$ref": "#/components/parameters/end_hour"
+          },
+          {
+            "$ref": "#/components/parameters/start_minutely_15"
+          },
+          {
+            "$ref": "#/components/parameters/end_minutely_15"
+          },
+          {
+            "$ref": "#/components/parameters/models"
+          },
+          {
+            "$ref": "#/components/parameters/cell_selection"
+          },
+          {
+            "$ref": "#/components/parameters/apikey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful weather forecast response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastResponse"
+                },
+                "examples": {
+                  "singleLocationHourly": {
+                    "summary": "Single location with hourly temperature",
+                    "value": {
+                      "latitude": 52.52,
+                      "longitude": 13.419,
+                      "elevation": 44.812,
+                      "generationtime_ms": 2.2119,
+                      "utc_offset_seconds": 0,
+                      "timezone": "Europe/Berlin",
+                      "timezone_abbreviation": "CEST",
+                      "hourly_units": {
+                        "time": "iso8601",
+                        "temperature_2m": "°C"
+                      },
+                      "hourly": {
+                        "time": [
+                          "2022-07-01T00:00",
+                          "2022-07-01T01:00",
+                          "2022-07-01T02:00"
+                        ],
+                        "temperature_2m": [
+                          13.0,
+                          12.7,
+                          12.7
+                        ]
+                      }
+                    }
+                  },
+                  "withDailyAndCurrent": {
+                    "summary": "Hourly, daily and current conditions",
+                    "value": {
+                      "latitude": 40.71,
+                      "longitude": -74.01,
+                      "elevation": 10.0,
+                      "generationtime_ms": 3.5,
+                      "utc_offset_seconds": -18000,
+                      "timezone": "America/New_York",
+                      "timezone_abbreviation": "EDT",
+                      "current": {
+                        "time": "2026-05-31T23:45",
+                        "interval": 900,
+                        "temperature_2m": 19.3,
+                        "relative_humidity_2m": 72,
+                        "apparent_temperature": 19.0,
+                        "is_day": 0,
+                        "precipitation": 0.0,
+                        "weather_code": 1,
+                        "cloud_cover": 20,
+                        "wind_speed_10m": 8.5,
+                        "wind_direction_10m": 250,
+                        "wind_gusts_10m": 14.0
+                      },
+                      "hourly_units": {
+                        "time": "iso8601",
+                        "temperature_2m": "°C",
+                        "precipitation": "mm",
+                        "weather_code": "wmo code"
+                      },
+                      "hourly": {
+                        "time": [
+                          "2026-05-31T18:00",
+                          "2026-05-31T19:00"
+                        ],
+                        "temperature_2m": [
+                          22.1,
+                          21.4
+                        ],
+                        "precipitation": [
+                          0.0,
+                          0.1
+                        ],
+                        "weather_code": [
+                          1,
+                          3
+                        ]
+                      },
+                      "daily_units": {
+                        "time": "iso8601",
+                        "temperature_2m_max": "°C",
+                        "temperature_2m_min": "°C",
+                        "precipitation_sum": "mm",
+                        "weather_code": "wmo code"
+                      },
+                      "daily": {
+                        "time": [
+                          "2026-05-31",
+                          "2026-06-01"
+                        ],
+                        "temperature_2m_max": [
+                          24.0,
+                          25.5
+                        ],
+                        "temperature_2m_min": [
+                          16.0,
+                          17.2
+                        ],
+                        "precipitation_sum": [
+                          0.4,
+                          1.2
+                        ],
+                        "weather_code": [
+                          1,
+                          61
+                        ]
+                      }
+                    }
+                  },
+                  "multiLocation": {
+                    "summary": "Multiple locations (comma-separated coordinates)",
+                    "value": [
+                      {
+                        "latitude": 52.52,
+                        "longitude": 13.419,
+                        "elevation": 44.812,
+                        "generationtime_ms": 2.1,
+                        "utc_offset_seconds": 0,
+                        "timezone": "Europe/Berlin",
+                        "timezone_abbreviation": "CEST",
+                        "hourly_units": {
+                          "time": "iso8601",
+                          "temperature_2m": "°C"
+                        },
+                        "hourly": {
+                          "time": [
+                            "2022-07-01T00:00",
+                            "2022-07-01T01:00"
+                          ],
+                          "temperature_2m": [
+                            13.0,
+                            12.7
+                          ]
+                        }
+                      },
+                      {
+                        "latitude": 48.85,
+                        "longitude": 2.35,
+                        "elevation": 35.0,
+                        "generationtime_ms": 2.0,
+                        "utc_offset_seconds": 7200,
+                        "timezone": "Europe/Paris",
+                        "timezone_abbreviation": "CEST",
+                        "hourly_units": {
+                          "time": "iso8601",
+                          "temperature_2m": "°C"
+                        },
+                        "hourly": {
+                          "time": [
+                            "2022-07-01T00:00",
+                            "2022-07-01T01:00"
+                          ],
+                          "temperature_2m": [
+                            16.0,
+                            15.5
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "invalidHourlyVariable": {
+                    "summary": "Invalid hourly variable name",
+                    "value": {
+                      "error": true,
+                      "reason": "Cannot initialize WeatherVariable from invalid String value \ttempeture_2m for key hourly"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "latitude": {
+        "name": "latitude",
+        "in": "query",
+        "required": true,
+        "description": "Geographical WGS84 latitude of the location. Multiple coordinates can be comma separated.",
+        "schema": {
+          "type": "string",
+          "example": "52.52"
+        }
+      },
+      "longitude": {
+        "name": "longitude",
+        "in": "query",
+        "required": true,
+        "description": "Geographical WGS84 longitude of the location. Use negative values for western longitudes. Multiple coordinates can be comma separated.",
+        "schema": {
+          "type": "string",
+          "example": "13.41"
+        }
+      },
+      "elevation": {
+        "name": "elevation",
+        "in": "query",
+        "required": false,
+        "description": "Elevation in meters used for statistical downscaling. If omitted, a 90 m DEM is used. Use `nan` to disable downscaling.",
+        "schema": {
+          "type": "string",
+          "example": "44.8"
+        }
+      },
+      "hourly": {
+        "name": "hourly",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated list of hourly weather variables to return. Can be repeated multiple times.",
+        "schema": {
+          "type": "string",
+          "example": "temperature_2m,relative_humidity_2m,precipitation",
+          "enum": [
+            "temperature_2m",
+            "relative_humidity_2m",
+            "dew_point_2m",
+            "apparent_temperature",
+            "precipitation",
+            "rain",
+            "showers",
+            "snowfall",
+            "snow_depth",
+            "weather_code",
+            "pressure_msl",
+            "surface_pressure",
+            "cloud_cover",
+            "cloud_cover_low",
+            "cloud_cover_mid",
+            "cloud_cover_high",
+            "visibility",
+            "evapotranspiration",
+            "et0_fao_evapotranspiration",
+            "vapour_pressure_deficit",
+            "wind_speed_10m",
+            "wind_speed_80m",
+            "wind_speed_120m",
+            "wind_speed_180m",
+            "wind_direction_10m",
+            "wind_direction_80m",
+            "wind_direction_120m",
+            "wind_direction_180m",
+            "wind_gusts_10m",
+            "shortwave_radiation",
+            "direct_radiation",
+            "direct_normal_irradiance",
+            "diffuse_radiation",
+            "global_tilted_irradiance",
+            "soil_temperature_0cm",
+            "soil_temperature_6cm",
+            "soil_temperature_18cm",
+            "soil_temperature_54cm",
+            "soil_moisture_0_to_1cm",
+            "soil_moisture_1_to_3cm",
+            "soil_moisture_3_to_9cm",
+            "soil_moisture_9_to_27cm",
+            "soil_moisture_27_to_81cm",
+            "freezing_level_height",
+            "cape",
+            "is_day"
+          ]
+        }
+      },
+      "minutely_15": {
+        "name": "minutely_15",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated list of 15-minutely weather variables to return.",
+        "schema": {
+          "type": "string",
+          "example": "temperature_2m,precipitation",
+          "enum": [
+            "temperature_2m",
+            "relative_humidity_2m",
+            "dew_point_2m",
+            "apparent_temperature",
+            "shortwave_radiation",
+            "direct_radiation",
+            "direct_normal_irradiance",
+            "global_tilted_irradiance",
+            "global_tilted_irradiance_instant",
+            "diffuse_radiation",
+            "sunshine_duration",
+            "lightning_potential",
+            "precipitation",
+            "snowfall",
+            "rain",
+            "showers",
+            "snowfall_height",
+            "freezing_level_height",
+            "cape",
+            "wind_speed_10m",
+            "wind_speed_80m",
+            "wind_direction_10m",
+            "wind_direction_80m",
+            "wind_gusts_10m",
+            "visibility",
+            "weather_code"
+          ]
+        }
+      },
+      "daily": {
+        "name": "daily",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated list of daily aggregated weather variables to return. If specified, `timezone` is required.",
+        "schema": {
+          "type": "string",
+          "example": "temperature_2m_max,temperature_2m_min,precipitation_sum",
+          "enum": [
+            "temperature_2m_max",
+            "temperature_2m_mean",
+            "temperature_2m_min",
+            "apparent_temperature_max",
+            "apparent_temperature_mean",
+            "apparent_temperature_min",
+            "precipitation_sum",
+            "rain_sum",
+            "showers_sum",
+            "snowfall_sum",
+            "precipitation_hours",
+            "precipitation_probability_max",
+            "precipitation_probability_mean",
+            "precipitation_probability_min",
+            "weather_code",
+            "sunrise",
+            "sunset",
+            "sunshine_duration",
+            "daylight_duration",
+            "wind_speed_10m_max",
+            "wind_gusts_10m_max",
+            "wind_direction_10m_dominant",
+            "shortwave_radiation_sum",
+            "et0_fao_evapotranspiration",
+            "uv_index_max",
+            "uv_index_clear_sky_max"
+          ]
+        }
+      },
+      "current": {
+        "name": "current",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated list of weather variables to return as current conditions. Any variable available in hourly data is valid.",
+        "schema": {
+          "type": "string",
+          "example": "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code"
+        }
+      },
+      "temperature_unit": {
+        "name": "temperature_unit",
+        "in": "query",
+        "required": false,
+        "description": "Temperature unit for all temperature values.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "celsius",
+            "fahrenheit"
+          ],
+          "default": "celsius"
+        }
+      },
+      "wind_speed_unit": {
+        "name": "wind_speed_unit",
+        "in": "query",
+        "required": false,
+        "description": "Unit for wind speed values.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "kmh",
+            "ms",
+            "mph",
+            "kn"
+          ],
+          "default": "kmh"
+        }
+      },
+      "precipitation_unit": {
+        "name": "precipitation_unit",
+        "in": "query",
+        "required": false,
+        "description": "Unit for precipitation amounts.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "mm",
+            "inch"
+          ],
+          "default": "mm"
+        }
+      },
+      "timeformat": {
+        "name": "timeformat",
+        "in": "query",
+        "required": false,
+        "description": "Format of time values in the response.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "iso8601",
+            "unixtime"
+          ],
+          "default": "iso8601"
+        }
+      },
+      "timezone": {
+        "name": "timezone",
+        "in": "query",
+        "required": false,
+        "description": "Time zone for the returned timestamps. If set, data starts at 00:00 local time. Use `auto` to resolve from coordinates.",
+        "schema": {
+          "type": "string",
+          "default": "GMT",
+          "example": "Europe/Berlin"
+        }
+      },
+      "past_days": {
+        "name": "past_days",
+        "in": "query",
+        "required": false,
+        "description": "Number of past days (0–92) to include before today.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 92,
+          "default": 0,
+          "example": 1
+        }
+      },
+      "forecast_days": {
+        "name": "forecast_days",
+        "in": "query",
+        "required": false,
+        "description": "Number of forecast days (0–16) to return. Default is 7.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16,
+          "default": 7,
+          "example": 7
+        }
+      },
+      "forecast_hours": {
+        "name": "forecast_hours",
+        "in": "query",
+        "required": false,
+        "description": "Number of hourly timesteps to return, counted from the current hour.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "example": 48
+        }
+      },
+      "forecast_minutely_15": {
+        "name": "forecast_minutely_15",
+        "in": "query",
+        "required": false,
+        "description": "Number of 15-minutely timesteps to return, counted from the current 15-minute step.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "example": 96
+        }
+      },
+      "past_hours": {
+        "name": "past_hours",
+        "in": "query",
+        "required": false,
+        "description": "Number of past hourly timesteps to include before the current hour.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "example": 24
+        }
+      },
+      "past_minutely_15": {
+        "name": "past_minutely_15",
+        "in": "query",
+        "required": false,
+        "description": "Number of past 15-minutely timesteps to include before the current 15-minute step.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "example": 96
+        }
+      },
+      "start_date": {
+        "name": "start_date",
+        "in": "query",
+        "required": false,
+        "description": "Start date (inclusive) for data as ISO8601 date (yyyy-mm-dd).",
+        "schema": {
+          "type": "string",
+          "format": "date",
+          "example": "2022-06-30"
+        }
+      },
+      "end_date": {
+        "name": "end_date",
+        "in": "query",
+        "required": false,
+        "description": "End date (inclusive) for data as ISO8601 date (yyyy-mm-dd).",
+        "schema": {
+          "type": "string",
+          "format": "date",
+          "example": "2022-07-07"
+        }
+      },
+      "start_hour": {
+        "name": "start_hour",
+        "in": "query",
+        "required": false,
+        "description": "Start datetime for hourly data as ISO8601 (yyyy-mm-ddThh:mm).",
+        "schema": {
+          "type": "string",
+          "example": "2022-06-30T12:00"
+        }
+      },
+      "end_hour": {
+        "name": "end_hour",
+        "in": "query",
+        "required": false,
+        "description": "End datetime for hourly data as ISO8601 (yyyy-mm-ddThh:mm).",
+        "schema": {
+          "type": "string",
+          "example": "2022-07-01T12:00"
+        }
+      },
+      "start_minutely_15": {
+        "name": "start_minutely_15",
+        "in": "query",
+        "required": false,
+        "description": "Start datetime for 15-minutely data as ISO8601 (yyyy-mm-ddThh:mm).",
+        "schema": {
+          "type": "string",
+          "example": "2022-06-30T12:00"
+        }
+      },
+      "end_minutely_15": {
+        "name": "end_minutely_15",
+        "in": "query",
+        "required": false,
+        "description": "End datetime for 15-minutely data as ISO8601 (yyyy-mm-ddThh:mm).",
+        "schema": {
+          "type": "string",
+          "example": "2022-06-30T18:00"
+        }
+      },
+      "models": {
+        "name": "models",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated list of weather models to use. By default, the best suitable models are combined.",
+        "schema": {
+          "type": "string",
+          "example": "icon,gfs",
+          "description": "Examples: icon, gfs, hrrr, arpege, arome, ifs, ukmo, kma, msm, gem, access-g, grapes, harmonie, arpae, etc."
+        }
+      },
+      "cell_selection": {
+        "name": "cell_selection",
+        "in": "query",
+        "required": false,
+        "description": "Preference for grid-cell selection.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "land",
+            "sea",
+            "nearest"
+          ],
+          "default": "land"
+        }
+      },
+      "apikey": {
+        "name": "apikey",
+        "in": "query",
+        "required": false,
+        "description": "API key for commercial use and access to reserved resources. Required when using the customer API server.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "ForecastResponse": {
+        "type": "object",
+        "description": "Forecast response for one or more locations. For multiple coordinates, the API returns a JSON array of this object.",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "format": "float",
+            "description": "Latitude of the grid-cell used for the forecast."
+          },
+          "longitude": {
+            "type": "number",
+            "format": "float",
+            "description": "Longitude of the grid-cell used for the forecast."
+          },
+          "elevation": {
+            "type": "number",
+            "format": "float",
+            "description": "Elevation in meters from a 90 m digital elevation model or user-specified elevation."
+          },
+          "generationtime_ms": {
+            "type": "number",
+            "format": "float",
+            "description": "Generation time of the weather forecast in milliseconds."
+          },
+          "utc_offset_seconds": {
+            "type": "integer",
+            "description": "Applied timezone offset in seconds from UTC."
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Timezone identifier (e.g. Europe/Berlin)."
+          },
+          "timezone_abbreviation": {
+            "type": "string",
+            "description": "Timezone abbreviation (e.g. CEST)."
+          },
+          "current": {
+            "$ref": "#/components/schemas/CurrentBlock"
+          },
+          "hourly": {
+            "$ref": "#/components/schemas/TimeSeriesBlock"
+          },
+          "hourly_units": {
+            "$ref": "#/components/schemas/UnitsBlock"
+          },
+          "minutely_15": {
+            "$ref": "#/components/schemas/TimeSeriesBlock"
+          },
+          "minutely_15_units": {
+            "$ref": "#/components/schemas/UnitsBlock"
+          },
+          "daily": {
+            "$ref": "#/components/schemas/TimeSeriesBlock"
+          },
+          "daily_units": {
+            "$ref": "#/components/schemas/UnitsBlock"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CurrentBlock": {
+        "type": "object",
+        "description": "Current conditions for selected variables.",
+        "properties": {
+          "time": {
+            "type": "string",
+            "description": "Timestamp for which the current data is valid."
+          },
+          "interval": {
+            "type": "integer",
+            "description": "Interval in seconds used for backward-looking sums or averages."
+          }
+        },
+        "additionalProperties": {
+          "type": "number",
+          "description": "Numeric value for each requested current variable."
+        }
+      },
+      "TimeSeriesBlock": {
+        "type": "object",
+        "description": "Time series block for hourly, 15-minutely, or daily data.",
+        "properties": {
+          "time": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of timestamps corresponding to each timestep."
+          }
+        },
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Array of numeric values for each requested variable."
+        }
+      },
+      "UnitsBlock": {
+        "type": "object",
+        "description": "Units for each variable in the corresponding time series block.",
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "example": true
+          },
+          "reason": {
+            "type": "string",
+            "example": "Cannot initialize WeatherVariable from invalid String value \ttempeture_2m for key hourly"
+          }
+        },
+        "required": [
+          "error",
+          "reason"
+        ]
+      }
+    }
+  }
+}
