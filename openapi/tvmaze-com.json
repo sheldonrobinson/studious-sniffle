@@ -17,10 +17,6 @@
     {
       "url": "https://api.tvmaze.com",
       "description": "TVMaze API (HTTPS)"
-    },
-    {
-      "url": "http://api.tvmaze.com",
-      "description": "TVMaze API (HTTP)"
     }
   ],
   "tags": [
