@@ -1,0 +1,1685 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MusicBrainz Web Service 2",
+    "version": "2.0.0",
+    "description": "OpenAPI 3.0 specification for the MusicBrainz Web Service 2 (ws/2) JSON interface. This specification focuses on the documented REST endpoints, common parameters, and representative response schemas for JSON usage."
+  },
+  "servers": [
+    {
+      "url": "https://musicbrainz.org/ws/2",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    { "name": "Lookup" },
+    { "name": "Browse" },
+    { "name": "Search" },
+    { "name": "NonMBIDLookup" },
+    { "name": "Genre" },
+    { "name": "URL" },
+    { "name": "UserData" },
+    { "name": "Collections" }
+  ],
+  "paths": {
+    "/area/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getAreaByMbid",
+        "summary": "Lookup area by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Area lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Area" },
+                "examples": {
+                  "example": {
+                    "summary": "Area example",
+                    "value": {
+                      "id": "d79e4501-8cba-431b-96e7-bb9976f0ae76",
+                      "type": "Subdivision",
+                      "name": "Île-de-France",
+                      "sort-name": "Île-de-France",
+                      "iso-3166-2-codes": ["FR-J"],
+                      "life-span": { "ended": false },
+                      "aliases": [
+                        {
+                          "name": "Île-de-France",
+                          "sort-name": "Île-de-France",
+                          "locale": "en",
+                          "type": "Area name",
+                          "primary": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/area": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listAreas",
+        "summary": "Browse or search areas",
+        "description": "If a `query` parameter is present, performs a search. If a browsing parameter such as `collection` is present, performs a browse.",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse areas in a collection"
+          },
+          { "$ref": "#/components/parameters/Inc" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Area list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AreaList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/artist/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getArtistByMbid",
+        "summary": "Lookup artist by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/TypeFilter" },
+          { "$ref": "#/components/parameters/StatusFilter" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artist lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Artist" },
+                "examples": {
+                  "example": {
+                    "summary": "Artist example",
+                    "value": {
+                      "id": "e56fd97e-c18f-4e5e-9b4d-f9fc21b4973f",
+                      "type": "Group",
+                      "name": "Fred",
+                      "sort-name": "Fred",
+                      "country": "US",
+                      "area": {
+                        "id": "489ce91b-6658-3307-9877-795b68554c98",
+                        "name": "United States",
+                        "sort-name": "United States"
+                      },
+                      "life-span": {
+                        "begin": "1969",
+                        "end": "1974",
+                        "ended": true
+                      },
+                      "disambiguation": "US progressive rock band"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artist": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listArtists",
+        "summary": "Browse or search artists",
+        "description": "If `query` is present, performs a search. If a browsing parameter such as `area`, `collection`, `recording`, `release`, `release-group`, or `work` is present, performs a browse.",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          {
+            "name": "area",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse artists linked to an area"
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse artists in a collection"
+          },
+          {
+            "name": "recording",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse artists linked to a recording"
+          },
+          {
+            "name": "release",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse artists linked to a release"
+          },
+          {
+            "name": "release-group",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse artists linked to a release group"
+          },
+          {
+            "name": "work",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse artists linked to a work"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artist list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ArtistList" },
+                "examples": {
+                  "searchExample": {
+                    "summary": "Search artists example",
+                    "value": {
+                      "created": "2017-03-12T16:54:57.165Z",
+                      "count": 11,
+                      "offset": 0,
+                      "artists": [
+                        {
+                          "id": "e56fd97e-c18f-4e5e-9b4d-f9fc21b4973f",
+                          "type": "Group",
+                          "score": "100",
+                          "name": "Fred",
+                          "sort-name": "Fred",
+                          "country": "US"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/event/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getEventByMbid",
+        "summary": "Lookup event by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Event" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listEvents",
+        "summary": "Browse or search events",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          {
+            "name": "area",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse events in an area"
+          },
+          {
+            "name": "artist",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse events linked to an artist"
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse events in a collection"
+          },
+          {
+            "name": "place",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse events at a place"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EventList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/genre/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getGenreByMbid",
+        "summary": "Lookup genre by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Genre lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Genre" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/genre": {
+      "get": {
+        "tags": ["Browse"],
+        "operationId": "browseGenres",
+        "summary": "Browse genres by collection",
+        "parameters": [
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse genres in a collection"
+          },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Genre list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GenreList" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/genre/all": {
+      "get": {
+        "tags": ["Genre"],
+        "operationId": "listAllGenres",
+        "summary": "List all genres",
+        "description": "Returns all genres in alphabetical order. Supports JSON, XML, or plain text via `fmt=txt`.",
+        "parameters": [
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/FmtTextAware" }
+        ],
+        "responses": {
+          "200": {
+            "description": "All genres",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GenreList" }
+              },
+              "text/plain": {
+                "schema": { "type": "string" },
+                "example": "ambient\nblues\nclassical\n..."
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/instrument/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getInstrumentByMbid",
+        "summary": "Lookup instrument by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Instrument lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Instrument" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instrument": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listInstruments",
+        "summary": "Browse or search instruments",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse instruments in a collection"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Instrument list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InstrumentList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/label/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getLabelByMbid",
+        "summary": "Lookup label by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Label lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Label" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/label": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listLabels",
+        "summary": "Browse or search labels",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          {
+            "name": "area",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse labels in an area"
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse labels in a collection"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Label list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LabelList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/place/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getPlaceByMbid",
+        "summary": "Lookup place by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Place lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Place" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/place": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listPlaces",
+        "summary": "Browse or search places",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          {
+            "name": "area",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse places in an area"
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse places in a collection"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Place list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlaceList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/recording/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getRecordingByMbid",
+        "summary": "Lookup recording by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/TypeFilter" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recording lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Recording" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recording": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listRecordings",
+        "summary": "Browse or search recordings",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          {
+            "name": "artist",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse recordings by artist"
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse recordings in a collection"
+          },
+          {
+            "name": "release",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse recordings on a release"
+          },
+          {
+            "name": "work",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse recordings of a work"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recording list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RecordingList" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["UserData"],
+        "operationId": "submitIsrcs",
+        "summary": "Submit ISRCs for recordings (XML body)",
+        "description": "Submits ISRCs for recordings via XML body. JSON is not supported for submission; this is included for completeness.",
+        "parameters": [
+          { "$ref": "#/components/parameters/Client" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/xml": {
+              "schema": { "type": "string" },
+              "example": "<metadata xmlns=\"http://musicbrainz.org/ns/mmd-2.0#\"><recording-list><recording id=\"b9991644-7275-44db-bc43-fff6c6b4ce69\"><isrc-list count=\"1\"><isrc id=\"JPB600601201\"/></isrc-list></recording></recording-list></metadata>"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ISRC submission accepted"
+          }
+        }
+      }
+    },
+
+    "/release/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getReleaseByMbid",
+        "summary": "Lookup release by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/TypeFilter" },
+          { "$ref": "#/components/parameters/StatusFilter" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Release lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Release" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/release": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listReleases",
+        "summary": "Browse or search releases",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/TypeFilter" },
+          { "$ref": "#/components/parameters/StatusFilter" },
+          {
+            "name": "area",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse releases in an area"
+          },
+          {
+            "name": "artist",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse releases by artist"
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse releases in a collection"
+          },
+          {
+            "name": "label",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse releases on a label"
+          },
+          {
+            "name": "track",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse releases containing a track"
+          },
+          {
+            "name": "track_artist",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse releases where artist appears only on tracks"
+          },
+          {
+            "name": "recording",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse releases containing a recording"
+          },
+          {
+            "name": "release-group",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse releases in a release group"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Release list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReleaseList" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["UserData"],
+        "operationId": "submitBarcodes",
+        "summary": "Submit barcodes for releases (XML body)",
+        "parameters": [
+          { "$ref": "#/components/parameters/Client" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/xml": {
+              "schema": { "type": "string" },
+              "example": "<metadata xmlns=\"http://musicbrainz.org/ns/mmd-2.0#\"><release-list><release id=\"047ea202-b98d-46ae-97f7-0180a20ee5cf\"><barcode>4050538793819</barcode></release></release-list></metadata>"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Barcode submission accepted"
+          }
+        }
+      }
+    },
+
+    "/release-group/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getReleaseGroupByMbid",
+        "summary": "Lookup release group by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/TypeFilter" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Release group lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReleaseGroup" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/release-group": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listReleaseGroups",
+        "summary": "Browse or search release groups",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/TypeFilter" },
+          {
+            "name": "artist",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse release groups by artist"
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse release groups in a collection"
+          },
+          {
+            "name": "release",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse release groups containing a release"
+          },
+          {
+            "name": "release-group-status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["website-default", "all"]
+            },
+            "description": "Filter release groups by website-default or all"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Release group list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReleaseGroupList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/series/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getSeriesByMbid",
+        "summary": "Lookup series by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Series lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Series" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/series": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listSeries",
+        "summary": "Browse or search series",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse series in a collection"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Series list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SeriesList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/work/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getWorkByMbid",
+        "summary": "Lookup work by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Work lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Work" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/work": {
+      "get": {
+        "tags": ["Browse", "Search"],
+        "operationId": "listWorks",
+        "summary": "Browse or search works",
+        "parameters": [
+          { "$ref": "#/components/parameters/Query" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "$ref": "#/components/parameters/Fmt" },
+          { "$ref": "#/components/parameters/Inc" },
+          {
+            "name": "artist",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse works by artist"
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Browse works in a collection"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Work list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WorkList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/url/{mbid}": {
+      "get": {
+        "tags": ["Lookup"],
+        "operationId": "getUrlByMbid",
+        "summary": "Lookup URL entity by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "URL lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UrlEntity" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/url": {
+      "get": {
+        "tags": ["NonMBIDLookup"],
+        "operationId": "lookupUrlByResource",
+        "summary": "Lookup URL entity by resource URL",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "URL to look up; may be specified multiple times"
+          },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "URL lookup result(s)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/UrlEntity" },
+                    { "$ref": "#/components/schemas/UrlEntityList" }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "URL not found"
+          }
+        }
+      }
+    },
+
+    "/discid/{discid}": {
+      "get": {
+        "tags": ["NonMBIDLookup"],
+        "operationId": "lookupByDiscId",
+        "summary": "Lookup releases by disc ID",
+        "parameters": [
+          {
+            "name": "discid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Disc ID or '-' for TOC-only fuzzy lookup"
+          },
+          { "$ref": "#/components/parameters/Inc" },
+          {
+            "name": "toc",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Table of contents for fuzzy lookup"
+          },
+          {
+            "name": "cdstubs",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["yes", "no"] },
+            "description": "Whether to include CD stubs (default yes)"
+          },
+          {
+            "name": "media-format",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["cd", "all"] },
+            "description": "Medium format filter for fuzzy TOC search"
+          },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Disc ID lookup result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "releases": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Release" }
+                    },
+                    "cdstub": {
+                      "type": "object",
+                      "description": "CD stub if no releases found",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/isrc/{isrc}": {
+      "get": {
+        "tags": ["NonMBIDLookup"],
+        "operationId": "lookupByIsrc",
+        "summary": "Lookup recordings by ISRC",
+        "parameters": [
+          {
+            "name": "isrc",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ISRC code"
+          },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "ISRC lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RecordingList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/iswc/{iswc}": {
+      "get": {
+        "tags": ["NonMBIDLookup"],
+        "operationId": "lookupByIswc",
+        "summary": "Lookup works by ISWC",
+        "parameters": [
+          {
+            "name": "iswc",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ISWC code"
+          },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "ISWC lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WorkList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/collection/{mbid}": {
+      "get": {
+        "tags": ["Collections"],
+        "operationId": "getCollectionByMbid",
+        "summary": "Lookup collection by MBID",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collection lookup result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Collection" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collection": {
+      "get": {
+        "tags": ["Collections"],
+        "operationId": "listCollections",
+        "summary": "Browse collections by editor",
+        "parameters": [
+          {
+            "name": "editor",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Editor name"
+          },
+          { "$ref": "#/components/parameters/Inc" },
+          { "$ref": "#/components/parameters/Fmt" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collection list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CollectionList" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/collection/{mbid}/releases": {
+      "put": {
+        "tags": ["Collections"],
+        "operationId": "addReleasesToCollection",
+        "summary": "Add releases to collection",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Client" },
+          {
+            "name": "releaseIds",
+            "in": "path",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Semicolon-separated list of release MBIDs (in URI path after /releases/)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Releases added"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Collections"],
+        "operationId": "removeReleasesFromCollection",
+        "summary": "Remove releases from collection",
+        "parameters": [
+          { "$ref": "#/components/parameters/MbidPath" },
+          { "$ref": "#/components/parameters/Client" },
+          {
+            "name": "releaseIds",
+            "in": "path",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Semicolon-separated list of release MBIDs (in URI path after /releases/)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Releases removed"
+          }
+        }
+      }
+    },
+
+    "/tag": {
+      "post": {
+        "tags": ["UserData"],
+        "operationId": "submitTags",
+        "summary": "Submit user tags and genres (XML body)",
+        "parameters": [
+          { "$ref": "#/components/parameters/Client" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/xml": {
+              "schema": { "type": "string" },
+              "example": "<metadata xmlns=\"http://musicbrainz.org/ns/mmd-2.0#\"><artist-list><artist id=\"a16d1433-ba89-4f72-a47b-a370add0bb56\"><user-tag-list><user-tag><name>female</name></user-tag><user-tag><name>korean</name></user-tag></user-tag-list></artist></artist-list></metadata>"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tags submission accepted"
+          }
+        }
+      }
+    },
+
+    "/rating": {
+      "post": {
+        "tags": ["UserData"],
+        "operationId": "submitRatings",
+        "summary": "Submit user ratings (XML body)",
+        "parameters": [
+          { "$ref": "#/components/parameters/Client" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/xml": {
+              "schema": { "type": "string" },
+              "example": "<metadata xmlns=\"http://musicbrainz.org/ns/mmd-2.0#\"><artist-list><artist id=\"455641ea-fff4-49f6-8fb4-49f961d8f1ad\"><user-rating>100</user-rating></artist></artist-list></metadata>"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ratings submission accepted"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "MbidPath": {
+        "name": "mbid",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string", "format": "uuid" },
+        "description": "MusicBrainz Identifier (MBID)"
+      },
+      "Inc": {
+        "name": "inc",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "description": "Space- or plus-separated list of sub-queries and relationship includes"
+        },
+        "description": "Include additional data such as recordings, releases, release-groups, works, relationships, tags, ratings, genres, etc."
+      },
+      "Fmt": {
+        "name": "fmt",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": ["json", "xml"]
+        },
+        "description": "Response format (defaults to XML; use json for JSON responses)"
+      },
+      "FmtTextAware": {
+        "name": "fmt",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": ["json", "xml", "txt"]
+        },
+        "description": "Response format (txt only for /genre/all)"
+      },
+      "Query": {
+        "name": "query",
+        "in": "query",
+        "schema": { "type": "string" },
+        "description": "Lucene search query string"
+      },
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25
+        },
+        "description": "Number of results to return (1–100)"
+      },
+      "Offset": {
+        "name": "offset",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "description": "Result offset for paging"
+      },
+      "TypeFilter": {
+        "name": "type",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "description": "Release or release-group type filter; may be a pipe-separated list"
+        },
+        "description": "Filter by type (e.g. album, single, ep, live, compilation, etc.)"
+      },
+      "StatusFilter": {
+        "name": "status",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "description": "Release status filter"
+        },
+        "description": "Filter releases by status (official, promotion, bootleg, pseudo-release, withdrawn, cancelled)"
+      },
+      "Client": {
+        "name": "client",
+        "in": "query",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Client identifier in the form application-version for data submission"
+      }
+    },
+    "schemas": {
+      "Area": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "type": { "type": "string" },
+          "name": { "type": "string" },
+          "sort-name": { "type": "string" },
+          "iso-3166-1-codes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "iso-3166-2-codes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "iso-3166-3-codes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "life-span": { "$ref": "#/components/schemas/LifeSpan" },
+          "aliases": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Alias" }
+          },
+          "relations": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Relation" }
+          }
+        }
+      },
+      "AreaList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "areas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Area" }
+          }
+        }
+      },
+
+      "Artist": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "type": { "type": "string" },
+          "name": { "type": "string" },
+          "sort-name": { "type": "string" },
+          "score": { "type": "string" },
+          "country": { "type": "string" },
+          "area": { "$ref": "#/components/schemas/Area" },
+          "begin-area": { "$ref": "#/components/schemas/Area" },
+          "end-area": { "$ref": "#/components/schemas/Area" },
+          "disambiguation": { "type": "string" },
+          "life-span": { "$ref": "#/components/schemas/LifeSpan" },
+          "aliases": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Alias" }
+          },
+          "tags": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Tag" }
+          },
+          "relations": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Relation" }
+          }
+        }
+      },
+      "ArtistList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "artists": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Artist" }
+          }
+        }
+      },
+
+      "Event": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "EventList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Event" }
+          }
+        }
+      },
+
+      "Genre": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "disambiguation": { "type": "string" }
+        }
+      },
+      "GenreList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "genres": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Genre" }
+          }
+        }
+      },
+
+      "Instrument": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "InstrumentList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "instruments": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Instrument" }
+          }
+        }
+      },
+
+      "Label": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "LabelList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "labels": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Label" }
+          }
+        }
+      },
+
+      "Place": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "PlaceList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "places": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Place" }
+          }
+        }
+      },
+
+      "Recording": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "RecordingList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "recordings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Recording" }
+          }
+        }
+      },
+
+      "Release": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "ReleaseList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "releases": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Release" }
+          }
+        }
+      },
+
+      "ReleaseGroup": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "ReleaseGroupList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "release-groups": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ReleaseGroup" }
+          }
+        }
+      },
+
+      "Series": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "SeriesList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "series": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Series" }
+          }
+        }
+      },
+
+      "Work": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "WorkList": {
+        "type": "object",
+        "properties": {
+          "created": { "type": "string", "format": "date-time" },
+          "count": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "works": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Work" }
+          }
+        }
+      },
+
+      "UrlEntity": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "UrlEntityList": {
+        "type": "object",
+        "properties": {
+          "urls": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/UrlEntity" }
+          }
+        }
+      },
+
+      "Collection": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "CollectionList": {
+        "type": "object",
+        "properties": {
+          "collections": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Collection" }
+          }
+        }
+      },
+
+      "LifeSpan": {
+        "type": "object",
+        "properties": {
+          "begin": { "type": "string" },
+          "end": { "type": "string" },
+          "ended": { "type": "boolean" }
+        }
+      },
+
+      "Alias": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "sort-name": { "type": "string" },
+          "locale": { "type": "string" },
+          "type": { "type": "string" },
+          "primary": { "type": "boolean" }
+        }
+      },
+
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "count": { "type": "integer" },
+          "name": { "type": "string" }
+        }
+      },
+
+      "Relation": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  }
+}
+
