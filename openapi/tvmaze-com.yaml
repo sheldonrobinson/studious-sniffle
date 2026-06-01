@@ -903,8 +903,7 @@ components:
         '2': 1704153600
     ImageSet:
       type:
-      - string
-      - 'null'
+      - object
       description: A set of image URLs in different sizes.
       properties:
         medium:

@@ -1054,7 +1054,7 @@
       },
 
       "ImageSet": {
-        "type": ["string", "null"],
+        "type": "object",
         "description": "A set of image URLs in different sizes.",
         "properties": {
           "medium": {
