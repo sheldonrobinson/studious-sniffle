@@ -1,0 +1,1263 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "REST Countries API",
+    "version": "3.1.0",
+    "description": "OpenAPI 3.0 specification for REST Countries v3.1.\n\nBase URL: https://restcountries.com\n\nYou must specify the `fields` query parameter (up to 10 fields) when calling the `/v3.1/all` endpoint, otherwise you'll get a bad request response."
+  },
+  "servers": [
+    {
+      "url": "https://restcountries.com",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/v3.1/all": {
+      "get": {
+        "operationId": "getAllCountries",
+        "summary": "Get all countries",
+        "description": "Retrieve information about all countries. You must specify the `fields` query parameter (up to 10 fields).",
+        "parameters": [
+          {
+            "name": "fields",
+            "in": "query",
+            "required": true,
+            "description": "Comma-separated list of fields to include in the response (up to 10).",
+            "schema": {
+              "type": "string",
+              "example": "name,capital,currencies"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of countries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                },
+                "examples": {
+                  "allCountriesWithNameFlags": {
+                    "summary": "All countries with name and flags",
+                    "value": [
+                      {
+                        "name": {
+                          "common": "Peru",
+                          "official": "Republic of Peru",
+                          "nativeName": {
+                            "spa": {
+                              "official": "República del Perú",
+                              "common": "Perú"
+                            }
+                          }
+                        },
+                        "flags": {
+                          "png": "https://flagcdn.com/w320/pe.png",
+                          "svg": "https://flagcdn.com/pe.svg",
+                          "alt": "The flag of Peru"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., missing or invalid fields parameter)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "status": 400,
+                  "message": "You must specify up to 10 fields when calling /v3.1/all"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/name/{name}": {
+      "get": {
+        "operationId": "getCountriesByName",
+        "summary": "Get countries by name",
+        "description": "Search by country name (common or official value).",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "description": "Country name (common or official).",
+            "schema": {
+              "type": "string",
+              "example": "peru"
+            }
+          },
+          {
+            "name": "fullText",
+            "in": "query",
+            "required": false,
+            "description": "If true, search by full country name (common or official).",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "example": true
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,capital,currencies"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching countries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                },
+                "examples": {
+                  "byName": {
+                    "summary": "Search by name",
+                    "value": [
+                      {
+                        "name": {
+                          "common": "Peru",
+                          "official": "Republic of Peru"
+                        },
+                        "capital": ["Lima"],
+                        "region": "Americas",
+                        "cca2": "PE",
+                        "cca3": "PER"
+                      }
+                    ]
+                  },
+                  "byFullName": {
+                    "summary": "Search by full name",
+                    "value": [
+                      {
+                        "name": {
+                          "common": "Aruba",
+                          "official": "Aruba"
+                        },
+                        "capital": ["Oranjestad"],
+                        "region": "Americas",
+                        "cca2": "AW",
+                        "cca3": "ABW"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No countries found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Not Found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/alpha/{code}": {
+      "get": {
+        "operationId": "getCountryByCode",
+        "summary": "Get country by code",
+        "description": "Search by `cca2`, `ccn3`, `cca3` or `cioc` country code.",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "description": "Country code (cca2, ccn3, cca3 or cioc).",
+            "schema": {
+              "type": "string",
+              "example": "co"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,capital,currencies"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Country found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                },
+                "example": [
+                  {
+                    "name": {
+                      "common": "Colombia",
+                      "official": "Republic of Colombia"
+                    },
+                    "cca2": "CO",
+                    "cca3": "COL",
+                    "ccn3": "170",
+                    "cioc": "COL",
+                    "capital": ["Bogotá"],
+                    "region": "Americas"
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "Country not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Not Found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/alpha": {
+      "get": {
+        "operationId": "getCountriesByCodes",
+        "summary": "Get countries by list of codes",
+        "description": "Search by multiple country codes at once.",
+        "parameters": [
+          {
+            "name": "codes",
+            "in": "query",
+            "required": true,
+            "description": "Comma-separated list of country codes (cca2, ccn3, cca3 or cioc).",
+            "schema": {
+              "type": "string",
+              "example": "170,no,est,pe"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,capital,currencies"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Countries found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                },
+                "example": [
+                  {
+                    "name": {
+                      "common": "Colombia",
+                      "official": "Republic of Colombia"
+                    },
+                    "cca3": "COL"
+                  },
+                  {
+                    "name": {
+                      "common": "Norway",
+                      "official": "Kingdom of Norway"
+                    },
+                    "cca3": "NOR"
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "No countries found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/currency/{currency}": {
+      "get": {
+        "operationId": "getCountriesByCurrency",
+        "summary": "Get countries by currency",
+        "description": "Search by currency code or name.",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "path",
+            "required": true,
+            "description": "Currency code or name.",
+            "schema": {
+              "type": "string",
+              "example": "cop"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,currencies"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Countries using the currency",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                },
+                "example": [
+                  {
+                    "name": {
+                      "common": "Colombia",
+                      "official": "Republic of Colombia"
+                    },
+                    "currencies": {
+                      "COP": {
+                        "name": "Colombian peso",
+                        "symbol": "$"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "No countries found for currency",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/lang/{language}": {
+      "get": {
+        "operationId": "getCountriesByLanguage",
+        "summary": "Get countries by language",
+        "description": "Search by language code or name.",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "path",
+            "required": true,
+            "description": "Language code or name.",
+            "schema": {
+              "type": "string",
+              "example": "spanish"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,languages"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Countries using the language",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No countries found for language",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/capital/{capital}": {
+      "get": {
+        "operationId": "getCountriesByCapital",
+        "summary": "Get countries by capital city",
+        "description": "Search by capital city.",
+        "parameters": [
+          {
+            "name": "capital",
+            "in": "path",
+            "required": true,
+            "description": "Capital city name.",
+            "schema": {
+              "type": "string",
+              "example": "tallinn"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,capital"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Countries with the given capital",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No countries found for capital",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/region/{region}": {
+      "get": {
+        "operationId": "getCountriesByRegion",
+        "summary": "Get countries by region",
+        "description": "Filter countries by UN demographic region.",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "path",
+            "required": true,
+            "description": "Region name (e.g., Europe, Americas, Asia).",
+            "schema": {
+              "type": "string",
+              "example": "europe"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,region,subregion"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Countries in the region",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No countries found for region",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/subregion/{subregion}": {
+      "get": {
+        "operationId": "getCountriesBySubregion",
+        "summary": "Get countries by subregion",
+        "description": "Filter countries by UN demographic subregion.",
+        "parameters": [
+          {
+            "name": "subregion",
+            "in": "path",
+            "required": true,
+            "description": "Subregion name (e.g., Northern Europe).",
+            "schema": {
+              "type": "string",
+              "example": "Northern Europe"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,region,subregion"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Countries in the subregion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No countries found for subregion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/demonym/{demonym}": {
+      "get": {
+        "operationId": "getCountriesByDemonym",
+        "summary": "Get countries by demonym",
+        "description": "Search by how a citizen is called (demonym).",
+        "parameters": [
+          {
+            "name": "demonym",
+            "in": "path",
+            "required": true,
+            "description": "Demonym (e.g., Peruvian).",
+            "schema": {
+              "type": "string",
+              "example": "peruvian"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,demonyms"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Countries matching the demonym",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No countries found for demonym",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/translation/{translation}": {
+      "get": {
+        "operationId": "getCountriesByTranslation",
+        "summary": "Get countries by translation",
+        "description": "Search by any translation name.",
+        "parameters": [
+          {
+            "name": "translation",
+            "in": "path",
+            "required": true,
+            "description": "Translated country name (e.g., Alemania).",
+            "schema": {
+              "type": "string",
+              "example": "alemania"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,translations"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Countries matching the translation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No countries found for translation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/independent": {
+      "get": {
+        "operationId": "getCountriesByIndependenceStatus",
+        "summary": "Get countries by independence status",
+        "description": "Get all independent (or non-independent) countries.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "description": "Independence status (true for independent, false for non-independent).",
+            "schema": {
+              "type": "boolean",
+              "example": true
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "languages,capital"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Countries filtered by independence status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid status parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3.1/{service}": {
+      "get": {
+        "operationId": "getCountriesByServiceWithFields",
+        "summary": "Filter response fields for any service",
+        "description": "Filter the output of any service to include only specified fields.",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "description": "Service name (e.g., all, name/peru, alpha/co, region/europe).",
+            "schema": {
+              "type": "string",
+              "example": "all"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": true,
+            "description": "Comma-separated list of fields to include in the response.",
+            "schema": {
+              "type": "string",
+              "example": "name,capital,currencies"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered response from the service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                },
+                "example": [
+                  {
+                    "name": {
+                      "common": "Peru",
+                      "official": "Republic of Peru"
+                    },
+                    "capital": ["Lima"],
+                    "currencies": {
+                      "PEN": {
+                        "name": "Peruvian sol",
+                        "symbol": "S/."
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid service or fields parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Country": {
+        "type": "object",
+        "description": "Country representation for REST Countries v3.1.",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "cca2": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 two-letter country code.",
+            "example": "PE"
+          },
+          "cca3": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-3 three-letter country code.",
+            "example": "PER"
+          },
+          "ccn3": {
+            "type": "string",
+            "description": "ISO 3166-1 numeric code (UN M49).",
+            "example": "604"
+          },
+          "cioc": {
+            "type": "string",
+            "description": "Code of the International Olympic Committee.",
+            "example": "PER"
+          },
+          "independent": {
+            "type": "boolean",
+            "description": "ISO 3166-1 independence status (the country is considered a sovereign state).",
+            "example": true
+          },
+          "status": {
+            "type": "string",
+            "description": "ISO 3166-1 assignment status.",
+            "example": "officially-assigned"
+          },
+          "unMember": {
+            "type": "boolean",
+            "description": "UN Member status.",
+            "example": true
+          },
+          "capital": {
+            "type": "array",
+            "description": "Capital cities.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["Lima"]
+          },
+          "capitalInfo": {
+            "type": "object",
+            "description": "Capital latitude and longitude.",
+            "properties": {
+              "latlng": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "example": [-12.0464, -77.0428]
+              }
+            }
+          },
+          "region": {
+            "type": "string",
+            "description": "UN demographic region.",
+            "example": "Americas"
+          },
+          "subregion": {
+            "type": "string",
+            "description": "UN demographic subregion.",
+            "example": "South America"
+          },
+          "languages": {
+            "type": "object",
+            "description": "List of official languages (keyed by ISO language code).",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "spa": "Spanish"
+            }
+          },
+          "translations": {
+            "type": "object",
+            "description": "List of country name translations.",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Translation"
+            }
+          },
+          "latlng": {
+            "type": "array",
+            "description": "Latitude and longitude.",
+            "items": {
+              "type": "number"
+            },
+            "example": [-10.0, -76.0]
+          },
+          "borders": {
+            "type": "array",
+            "description": "Border countries (cca3 codes).",
+            "items": {
+              "type": "string"
+            },
+            "example": ["BOL", "BRA", "CHL", "COL", "ECU"]
+          },
+          "area": {
+            "type": "number",
+            "description": "Geographical size in square kilometers.",
+            "example": 1285216
+          },
+          "flag": {
+            "type": "string",
+            "description": "Flag emoji.",
+            "example": "🇵🇪"
+          },
+          "flags": {
+            "$ref": "#/components/schemas/Flags"
+          },
+          "coatOfArms": {
+            "$ref": "#/components/schemas/CoatOfArms"
+          },
+          "maps": {
+            "$ref": "#/components/schemas/Maps"
+          },
+          "population": {
+            "type": "integer",
+            "description": "Country population.",
+            "example": 32971846
+          },
+          "timezones": {
+            "type": "array",
+            "description": "Timezones.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["UTC-05:00"]
+          },
+          "continents": {
+            "type": "array",
+            "description": "List of continents the country is on.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["South America"]
+          },
+          "startOfWeek": {
+            "type": "string",
+            "description": "Day of the start of week (Sunday/Monday/Saturday).",
+            "example": "monday"
+          },
+          "tld": {
+            "type": "array",
+            "description": "Internet top level domains.",
+            "items": {
+              "type": "string"
+            },
+            "example": [".pe"]
+          },
+          "idd": {
+            "$ref": "#/components/schemas/Idd"
+          },
+          "currencies": {
+            "type": "object",
+            "description": "List of all currencies.",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Currency"
+            },
+            "example": {
+              "PEN": {
+                "name": "Peruvian sol",
+                "symbol": "S/."
+              }
+            }
+          },
+          "car": {
+            "$ref": "#/components/schemas/Car"
+          },
+          "gini": {
+            "type": "object",
+            "description": "World Bank Gini index by year.",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "example": {
+              "2019": 41.5
+            }
+          },
+          "landlocked": {
+            "type": "boolean",
+            "description": "Landlocked country.",
+            "example": false
+          },
+          "demonyms": {
+            "$ref": "#/components/schemas/Demonyms"
+          },
+          "fifa": {
+            "type": "string",
+            "description": "FIFA code.",
+            "example": "PER"
+          }
+        }
+      },
+      "Name": {
+        "type": "object",
+        "description": "Country name information.",
+        "properties": {
+          "common": {
+            "type": "string",
+            "description": "Common country name.",
+            "example": "Peru"
+          },
+          "official": {
+            "type": "string",
+            "description": "Official country name.",
+            "example": "Republic of Peru"
+          },
+          "nativeName": {
+            "type": "object",
+            "description": "Official and common native country names keyed by language code.",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/NativeName"
+            },
+            "example": {
+              "spa": {
+                "official": "República del Perú",
+                "common": "Perú"
+              }
+            }
+          }
+        }
+      },
+      "NativeName": {
+        "type": "object",
+        "description": "Native country name.",
+        "properties": {
+          "official": {
+            "type": "string",
+            "example": "República del Perú"
+          },
+          "common": {
+            "type": "string",
+            "example": "Perú"
+          }
+        }
+      },
+      "Translation": {
+        "type": "object",
+        "description": "Translated country name.",
+        "properties": {
+          "official": {
+            "type": "string",
+            "example": "República del Perú"
+          },
+          "common": {
+            "type": "string",
+            "example": "Perú"
+          }
+        }
+      },
+      "Currency": {
+        "type": "object",
+        "description": "Currency information.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Peruvian sol"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "S/."
+          }
+        }
+      },
+      "Idd": {
+        "type": "object",
+        "description": "International dialing codes.",
+        "properties": {
+          "root": {
+            "type": "string",
+            "example": "+5"
+          },
+          "suffixes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["1"]
+          }
+        }
+      },
+      "Maps": {
+        "type": "object",
+        "description": "Links to maps.",
+        "properties": {
+          "googleMaps": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://goo.gl/maps/aGzP7m1vG1p"
+          },
+          "openStreetMaps": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://www.openstreetmap.org/relation/288247"
+          }
+        }
+      },
+      "Flags": {
+        "type": "object",
+        "description": "Links to SVG and PNG flags.",
+        "properties": {
+          "png": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://flagcdn.com/w320/pe.png"
+          },
+          "svg": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://flagcdn.com/pe.svg"
+          },
+          "alt": {
+            "type": "string",
+            "description": "Alternative text description of the flag.",
+            "example": "The flag of Peru"
+          }
+        }
+      },
+      "CoatOfArms": {
+        "type": "object",
+        "description": "Links to SVG and PNG coat of arms images.",
+        "properties": {
+          "png": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://mainfacts.com/media/images/coats_of_arms/pe.png"
+          },
+          "svg": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://mainfacts.com/media/images/coats_of_arms/pe.svg"
+          }
+        }
+      },
+      "Car": {
+        "type": "object",
+        "description": "Car-related information.",
+        "properties": {
+          "signs": {
+            "type": "array",
+            "description": "Car distinguished (oval) signs.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["PE"]
+          },
+          "side": {
+            "type": "string",
+            "description": "Car driving side.",
+            "example": "right"
+          }
+        }
+      },
+      "Demonyms": {
+        "type": "object",
+        "description": "Genderized inhabitants of the country.",
+        "properties": {
+          "eng": {
+            "$ref": "#/components/schemas/Demonym"
+          },
+          "fra": {
+            "$ref": "#/components/schemas/Demonym"
+          }
+        },
+        "example": {
+          "eng": {
+            "f": "Peruvian",
+            "m": "Peruvian"
+          },
+          "fra": {
+            "f": "Péruvienne",
+            "m": "Péruvien"
+          }
+        }
+      },
+      "Demonym": {
+        "type": "object",
+        "description": "Demonym in a specific language.",
+        "properties": {
+          "f": {
+            "type": "string",
+            "example": "Peruvian"
+          },
+          "m": {
+            "type": "string",
+            "example": "Peruvian"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error response.",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 404
+          },
+          "message": {
+            "type": "string",
+            "example": "Not Found"
+          }
+        }
+      }
+    }
+  }
+}
