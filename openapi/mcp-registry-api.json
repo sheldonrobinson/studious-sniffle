@@ -1,0 +1,1220 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MCP Registry API",
+    "description": "Unofficial OpenAPI 3.0 specification for the MCP Registry REST API, modeled for MCP client compatibility.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "MCP Registry",
+      "url": "https://registry.modelcontextprotocol.io",
+      "email": "support@modelcontextprotocol.io"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://registry.modelcontextprotocol.io",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "servers",
+      "description": "Operations related to MCP servers in the registry"
+    },
+    {
+      "name": "search",
+      "description": "Search and discovery operations"
+    },
+    {
+      "name": "metadata",
+      "description": "Registry metadata and taxonomy"
+    },
+    {
+      "name": "system",
+      "description": "System and health endpoints"
+    }
+  ],
+  "paths": {
+    "/servers": {
+      "get": {
+        "tags": ["servers"],
+        "summary": "List MCP servers",
+        "description": "Retrieve a paginated list of MCP servers registered in the MCP Registry.",
+        "operationId": "listServers",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (1-based).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Number of items per page.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Filter servers by tag (capability, category, or label).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Free-text search across server name, description, and tags.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort order for results.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["relevance", "name_asc", "name_desc", "created_desc", "created_asc"],
+              "default": "relevance"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of MCP servers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedServerList"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "Example server list",
+                    "value": {
+                      "data": [
+                        {
+                          "id": "openai-tools",
+                          "name": "OpenAI Tools MCP Server",
+                          "description": "A collection of tools for interacting with OpenAI-compatible APIs.",
+                          "homepageUrl": "https://github.com/modelcontextprotocol/openai-tools-mcp",
+                          "repositoryUrl": "https://github.com/modelcontextprotocol/openai-tools-mcp",
+                          "iconUrl": "https://registry.modelcontextprotocol.io/icons/openai-tools.png",
+                          "tags": ["openai", "tools", "http"],
+                          "capabilities": [
+                            {
+                              "name": "tools",
+                              "description": "Provides multiple tools for HTTP and OpenAI-compatible APIs."
+                            }
+                          ],
+                          "latestVersion": "1.2.0",
+                          "createdAt": "2024-05-01T12:34:56Z",
+                          "updatedAt": "2024-06-10T09:21:00Z",
+                          "publisher": {
+                            "name": "MCP Community",
+                            "url": "https://modelcontextprotocol.io"
+                          }
+                        }
+                      ],
+                      "meta": {
+                        "page": 1,
+                        "perPage": 20,
+                        "totalItems": 1,
+                        "totalPages": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["servers"],
+        "summary": "Register a new MCP server",
+        "description": "Submit a new MCP server to the registry. Depending on registry policy, submissions may be moderated.",
+        "operationId": "createServer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServerCreateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "Example server registration",
+                  "value": {
+                    "id": "my-awesome-mcp",
+                    "name": "My Awesome MCP Server",
+                    "description": "An MCP server that exposes awesome tools.",
+                    "homepageUrl": "https://example.com/mcp",
+                    "repositoryUrl": "https://github.com/example/my-awesome-mcp",
+                    "iconUrl": "https://example.com/assets/mcp-icon.png",
+                    "tags": ["productivity", "tools"],
+                    "capabilities": [
+                      {
+                        "name": "tools",
+                        "description": "Provides tools for task automation."
+                      }
+                    ],
+                    "versions": [
+                      {
+                        "version": "0.1.0",
+                        "mcpVersion": "1.0.0",
+                        "protocol": "stdio",
+                        "command": "node",
+                        "args": ["dist/index.js"],
+                        "env": {
+                          "NODE_ENV": "production"
+                        }
+                      }
+                    ],
+                    "publisher": {
+                      "name": "Example Inc.",
+                      "url": "https://example.com",
+                      "contactEmail": "devrel@example.com"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Server successfully registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Server"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid server definition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A server with the same ID already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/servers/{id}": {
+      "get": {
+        "tags": ["servers"],
+        "summary": "Get MCP server by ID",
+        "description": "Retrieve detailed information about a specific MCP server by its registry ID.",
+        "operationId": "getServerById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the MCP server in the registry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MCP server details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Server"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "Example server",
+                    "value": {
+                      "id": "openai-tools",
+                      "name": "OpenAI Tools MCP Server",
+                      "description": "A collection of tools for interacting with OpenAI-compatible APIs.",
+                      "homepageUrl": "https://github.com/modelcontextprotocol/openai-tools-mcp",
+                      "repositoryUrl": "https://github.com/modelcontextprotocol/openai-tools-mcp",
+                      "iconUrl": "https://registry.modelcontextprotocol.io/icons/openai-tools.png",
+                      "tags": ["openai", "tools", "http"],
+                      "capabilities": [
+                        {
+                          "name": "tools",
+                          "description": "Provides multiple tools for HTTP and OpenAI-compatible APIs."
+                        }
+                      ],
+                      "latestVersion": "1.2.0",
+                      "versions": [
+                        {
+                          "version": "1.2.0",
+                          "mcpVersion": "1.0.0",
+                          "protocol": "stdio",
+                          "command": "node",
+                          "args": ["dist/index.js"],
+                          "env": {
+                            "NODE_ENV": "production"
+                          },
+                          "createdAt": "2024-06-10T09:21:00Z"
+                        }
+                      ],
+                      "publisher": {
+                        "name": "MCP Community",
+                        "url": "https://modelcontextprotocol.io",
+                        "contactEmail": "registry@modelcontextprotocol.io"
+                      },
+                      "createdAt": "2024-05-01T12:34:56Z",
+                      "updatedAt": "2024-06-10T09:21:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Server not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["servers"],
+        "summary": "Update MCP server metadata",
+        "description": "Update mutable metadata fields for an existing MCP server.",
+        "operationId": "updateServer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the MCP server in the registry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServerUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server successfully updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Server"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid update payload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Server not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["servers"],
+        "summary": "Delete MCP server",
+        "description": "Remove an MCP server from the registry. May require appropriate authorization.",
+        "operationId": "deleteServer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the MCP server in the registry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Server successfully deleted. No content returned."
+          },
+          "404": {
+            "description": "Server not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/servers/{id}/versions": {
+      "get": {
+        "tags": ["servers"],
+        "summary": "List versions of an MCP server",
+        "description": "Retrieve all published versions of a specific MCP server.",
+        "operationId": "listServerVersions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the MCP server in the registry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of server versions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServerVersion"
+                  }
+                },
+                "examples": {
+                  "default": {
+                    "summary": "Example versions list",
+                    "value": [
+                      {
+                        "version": "1.2.0",
+                        "mcpVersion": "1.0.0",
+                        "protocol": "stdio",
+                        "command": "node",
+                        "args": ["dist/index.js"],
+                        "env": {
+                          "NODE_ENV": "production"
+                        },
+                        "createdAt": "2024-06-10T09:21:00Z"
+                      },
+                      {
+                        "version": "1.1.0",
+                        "mcpVersion": "1.0.0",
+                        "protocol": "stdio",
+                        "command": "node",
+                        "args": ["dist/index.js"],
+                        "env": {
+                          "NODE_ENV": "production"
+                        },
+                        "createdAt": "2024-05-20T10:00:00Z"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Server not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["servers"],
+        "summary": "Publish a new version of an MCP server",
+        "description": "Add a new version entry for an existing MCP server.",
+        "operationId": "createServerVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the MCP server in the registry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServerVersionCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Version successfully created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid version payload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Server not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version already exists for this server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/servers/{id}/versions/{version}": {
+      "get": {
+        "tags": ["servers"],
+        "summary": "Get specific version of an MCP server",
+        "description": "Retrieve details for a specific version of an MCP server.",
+        "operationId": "getServerVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the MCP server in the registry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "Semantic version string of the server version.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "1.2.0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server version details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersion"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Server or version not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["servers"],
+        "summary": "Delete a specific version of an MCP server",
+        "description": "Remove a specific version entry from an MCP server.",
+        "operationId": "deleteServerVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the MCP server in the registry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "Semantic version string of the server version.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "1.2.0"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Version successfully deleted. No content returned."
+          },
+          "404": {
+            "description": "Server or version not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/servers": {
+      "get": {
+        "tags": ["search"],
+        "summary": "Search MCP servers",
+        "description": "Full-text search across MCP servers with optional filters.",
+        "operationId": "searchServers",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search query string.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Filter by tag.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mcp_version",
+            "in": "query",
+            "description": "Filter by supported MCP protocol version.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "1.0.0"
+            }
+          },
+          {
+            "name": "protocol",
+            "in": "query",
+            "description": "Filter by transport protocol.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["stdio", "sse", "websocket", "http"]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (1-based).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Number of items per page.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results for MCP servers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedServerList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid search parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tags": {
+      "get": {
+        "tags": ["metadata"],
+        "summary": "List tags",
+        "description": "Retrieve all tags used to categorize MCP servers in the registry.",
+        "operationId": "listTags",
+        "responses": {
+          "200": {
+            "description": "List of tags.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                },
+                "examples": {
+                  "default": {
+                    "summary": "Example tags",
+                    "value": [
+                      {
+                        "name": "openai",
+                        "count": 12
+                      },
+                      {
+                        "name": "tools",
+                        "count": 34
+                      },
+                      {
+                        "name": "productivity",
+                        "count": 7
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["system"],
+        "summary": "Health check",
+        "description": "Simple health check endpoint for monitoring and readiness probes.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Registry is healthy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                },
+                "examples": {
+                  "default": {
+                    "summary": "Healthy response",
+                    "value": {
+                      "status": "ok",
+                      "uptimeSeconds": 123456,
+                      "version": "1.0.0"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PaginatedServerList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Server"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "required": ["data", "meta"]
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "perPage": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "totalItems": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": ["page", "perPage", "totalItems", "totalPages"]
+      },
+      "Server": {
+        "type": "object",
+        "description": "Represents an MCP server entry in the registry.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the MCP server in the registry.",
+            "example": "openai-tools"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name of the MCP server.",
+            "example": "OpenAI Tools MCP Server"
+          },
+          "description": {
+            "type": "string",
+            "description": "Short description of the MCP server.",
+            "example": "A collection of tools for interacting with OpenAI-compatible APIs."
+          },
+          "homepageUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Homepage or documentation URL for the MCP server.",
+            "example": "https://github.com/modelcontextprotocol/openai-tools-mcp"
+          },
+          "repositoryUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Source code repository URL.",
+            "example": "https://github.com/modelcontextprotocol/openai-tools-mcp"
+          },
+          "iconUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to an icon representing the MCP server.",
+            "example": "https://registry.modelcontextprotocol.io/icons/openai-tools.png"
+          },
+          "tags": {
+            "type": "array",
+            "description": "Tags used to categorize the MCP server.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["openai", "tools", "http"]
+          },
+          "capabilities": {
+            "type": "array",
+            "description": "Capabilities exposed by the MCP server.",
+            "items": {
+              "$ref": "#/components/schemas/ServerCapability"
+            }
+          },
+          "latestVersion": {
+            "type": "string",
+            "description": "Latest published version of the MCP server.",
+            "example": "1.2.0"
+          },
+          "versions": {
+            "type": "array",
+            "description": "All published versions of the MCP server.",
+            "items": {
+              "$ref": "#/components/schemas/ServerVersion"
+            }
+          },
+          "publisher": {
+            "$ref": "#/components/schemas/ServerPublisher"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the server was first registered."
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the server entry was last updated."
+          }
+        },
+        "required": ["id", "name", "description", "tags"]
+      },
+      "ServerCreateRequest": {
+        "type": "object",
+        "description": "Payload for creating a new MCP server entry.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the MCP server in the registry."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name of the MCP server."
+          },
+          "description": {
+            "type": "string",
+            "description": "Short description of the MCP server."
+          },
+          "homepageUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "repositoryUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "iconUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServerCapability"
+            }
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServerVersionCreateRequest"
+            }
+          },
+          "publisher": {
+            "$ref": "#/components/schemas/ServerPublisher"
+          }
+        },
+        "required": ["id", "name", "description", "tags"]
+      },
+      "ServerUpdateRequest": {
+        "type": "object",
+        "description": "Payload for updating an existing MCP server entry.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "homepageUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "repositoryUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "iconUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServerCapability"
+            }
+          },
+          "publisher": {
+            "$ref": "#/components/schemas/ServerPublisher"
+          }
+        }
+      },
+      "ServerVersion": {
+        "type": "object",
+        "description": "Represents a specific version of an MCP server.",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Semantic version of the MCP server.",
+            "example": "1.2.0"
+          },
+          "mcpVersion": {
+            "type": "string",
+            "description": "Supported MCP protocol version.",
+            "example": "1.0.0"
+          },
+          "protocol": {
+            "type": "string",
+            "description": "Transport protocol used by the MCP server.",
+            "enum": ["stdio", "sse", "websocket", "http"],
+            "example": "stdio"
+          },
+          "command": {
+            "type": "string",
+            "description": "Executable command to start the MCP server.",
+            "example": "node"
+          },
+          "args": {
+            "type": "array",
+            "description": "Arguments passed to the command.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["dist/index.js"]
+          },
+          "env": {
+            "type": "object",
+            "description": "Environment variables required to run the MCP server.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "NODE_ENV": "production"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when this version was published."
+          }
+        },
+        "required": ["version", "mcpVersion", "protocol", "command"]
+      },
+      "ServerVersionCreateRequest": {
+        "type": "object",
+        "description": "Payload for creating a new version of an MCP server.",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Semantic version of the MCP server."
+          },
+          "mcpVersion": {
+            "type": "string",
+            "description": "Supported MCP protocol version."
+          },
+          "protocol": {
+            "type": "string",
+            "enum": ["stdio", "sse", "websocket", "http"]
+          },
+          "command": {
+            "type": "string"
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "env": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["version", "mcpVersion", "protocol", "command"]
+      },
+      "ServerCapability": {
+        "type": "object",
+        "description": "Describes a capability exposed by an MCP server.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Capability name (e.g., tools, prompts, resources).",
+            "example": "tools"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of the capability.",
+            "example": "Provides multiple tools for HTTP and OpenAI-compatible APIs."
+          }
+        },
+        "required": ["name"]
+      },
+      "ServerPublisher": {
+        "type": "object",
+        "description": "Information about the publisher of the MCP server.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Publisher name.",
+            "example": "MCP Community"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Publisher website URL.",
+            "example": "https://modelcontextprotocol.io"
+          },
+          "contactEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Contact email for the publisher.",
+            "example": "registry@modelcontextprotocol.io"
+          }
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "description": "Represents a tag used to categorize MCP servers.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tag name.",
+            "example": "tools"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of servers using this tag.",
+            "example": 34
+          }
+        },
+        "required": ["name"]
+      },
+      "Health": {
+        "type": "object",
+        "description": "Health status of the registry.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Health status indicator.",
+            "example": "ok"
+          },
+          "uptimeSeconds": {
+            "type": "integer",
+            "description": "Server uptime in seconds.",
+            "example": 123456
+          },
+          "version": {
+            "type": "string",
+            "description": "Version of the registry service.",
+            "example": "1.0.0"
+          }
+        },
+        "required": ["status"]
+      },
+      "Error": {
+        "type": "object",
+        "description": "Standard error response.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "not_found"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "Server not found."
+          },
+          "details": {
+            "type": "object",
+            "description": "Additional error details.",
+            "additionalProperties": true
+          }
+        },
+        "required": ["code", "message"]
+      }
+    }
+  }
+}
