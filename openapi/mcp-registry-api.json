@@ -39,7 +39,7 @@
     }
   ],
   "paths": {
-    "/servers": {
+    "/v0.1/servers": {
       "get": {
         "tags": ["servers"],
         "summary": "List MCP servers",
@@ -245,7 +245,7 @@
         }
       }
     },
-    "/servers/{id}": {
+    "/v0.1/servers/{id}": {
       "get": {
         "tags": ["servers"],
         "summary": "Get MCP server by ID",
@@ -418,7 +418,7 @@
         }
       }
     },
-    "/servers/{id}/versions": {
+    "/v0.1/servers/{id}/versions": {
       "get": {
         "tags": ["servers"],
         "summary": "List versions of an MCP server",
@@ -560,7 +560,7 @@
         }
       }
     },
-    "/servers/{id}/versions/{version}": {
+    "/v0.1/servers/{id}/versions/{version}": {
       "get": {
         "tags": ["servers"],
         "summary": "Get specific version of an MCP server",
@@ -653,7 +653,7 @@
         }
       }
     },
-    "/search/servers": {
+    "/v0.1/search/servers": {
       "get": {
         "tags": ["search"],
         "summary": "Search MCP servers",
@@ -746,7 +746,7 @@
         }
       }
     },
-    "/tags": {
+    "/v0.1/tags": {
       "get": {
         "tags": ["metadata"],
         "summary": "List tags",
@@ -788,7 +788,7 @@
         }
       }
     },
-    "/health": {
+    "/v0.1/health": {
       "get": {
         "tags": ["system"],
         "summary": "Health check",
